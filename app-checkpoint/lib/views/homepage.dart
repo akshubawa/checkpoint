@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:uicons_pro/uicons_pro.dart';
 
 class HomePage extends StatelessWidget {
   final String company = "THECOMPANY";
@@ -100,9 +101,9 @@ class HomePage extends StatelessWidget {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Icon(
-                                      Icons.touch_app_rounded,
+                                      UIconsPro.regularRounded.tap,
                                       color: Colors.white,
-                                      size: screenWidth * .3,
+                                      size: screenWidth * .25,
                                     ),
                                     Text(
                                       "CLOCK IN",
@@ -136,8 +137,8 @@ class WavyBackgroundPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     // Create a gradient
     final gradient = LinearGradient(
-      colors: [Color(0xffe4e8fb), Color(0xffe8e4ff)],
-      stops: [0.2, 0.8],
+      colors: [Color(0xffe6f0fe), Color(0xffe8e4ff), Color(0xffe8e8ff)],
+      stops: [0.15, 0.4, 0.5],
       begin: Alignment.topRight,
       end: Alignment.bottomLeft,
     );
@@ -184,8 +185,8 @@ class BackgroundPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     // Create a gradient
     final gradient = LinearGradient(
-      colors: [Color(0xffe4e8fb), Color(0xffe8e4ff)],
-      stops: [0.2, 0.8],
+      colors: [Color(0xffe6f0fe), Color(0xffe8e4ff), Color(0xffe8e8ff)],
+      stops: [0.15, 0.4, 0.5],
       begin: Alignment.topRight,
       end: Alignment.bottomLeft,
     );
