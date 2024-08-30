@@ -1,3 +1,4 @@
+import 'package:checkpoint/views/geofencing/check_location.dart';
 import 'package:flutter/material.dart';
 
 class Homepage extends StatefulWidget {
@@ -19,7 +20,7 @@ class _HomepageState extends State<Homepage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text('Welcome to the Homepage!'),
-            
+            TextButton(onPressed: (){Navigator.push(context, MaterialPageRoute(builder: (context)=> const CheckLocationView()));}, child: Text("Check Distance"))
           ],
         ),
       ),
