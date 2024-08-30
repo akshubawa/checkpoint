@@ -45,6 +45,7 @@ dependencies:
   firebase_core: ^2.24.2
   shared_preferences_foundation: ^2.5.2
   workmanager: ^0.5.2
+  flutter_background_geolocation: ^4.15.5
 
 dev_dependencies:
   flutter_test:
