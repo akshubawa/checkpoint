@@ -1,27 +1,17 @@
-import 'package:checkpoint/views/geofencing/check_location.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 import 'package:uicons_pro/uicons_pro.dart';
-
-import 'package:intl/intl.dart';
-
 
 class HomePage extends StatelessWidget {
   final String company = "THECOMPANY";
+  final String date = "Wednesday, Dec 12";
 
   const HomePage({super.key});
-
   @override
   Widget build(BuildContext context) {
-    final String date = DateFormat('EEEE, MMM d, yyyy').format(DateTime.now()); // Format the date
-    final String time = DateFormat('HH:mm').format(DateTime.now()); // Format the time
-
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-
     return Scaffold(
-
       body: SizedBox(
         width: screenWidth,
         height: screenHeight,
@@ -31,7 +21,6 @@ class HomePage extends StatelessWidget {
             CustomPaint(
               size: Size(screenWidth * .6, screenHeight * 0.25),
               painter: WavyBackgroundPainter(),
-
             ),
             Positioned(
               top: screenHeight * 0.5,
@@ -75,12 +64,13 @@ class HomePage extends StatelessWidget {
                             fontSize: 18,
                             color: Colors.black,
                           ),
-                    
+                        ),
                         Column(
-                          mainAxisSize: MainAxisSize.min, // Wraps the content tightly
+                          mainAxisSize:
+                              MainAxisSize.min, // Wraps the content tightly
                           children: [
                             Text(
-                              time, // Display the current time
+                              "12:30",
                               style: GoogleFonts.outfit(
                                 height: 1,
                                 fontSize: 48,
@@ -89,7 +79,7 @@ class HomePage extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              date, // Display the current date
+                              date,
                               style: GoogleFonts.outfit(
                                 fontSize: 24,
                                 color: Colors.grey,
@@ -97,7 +87,6 @@ class HomePage extends StatelessWidget {
                             ),
                           ],
                         ),
-
                         Stack(
                           children: [
                             Positioned.fill(
@@ -106,30 +95,6 @@ class HomePage extends StatelessWidget {
                                 child: Image.asset(
                                   "assets/images/map.png",
                                   fit: BoxFit.cover,
-
-                        InkWell(
-                          onTap: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => const CheckLocationView()));
-                          },
-                          radius: screenWidth * .55,
-                          borderRadius: BorderRadius.all(Radius.circular(screenWidth * .5)),
-                          splashColor: const Color.fromARGB(255, 73, 105, 207).withOpacity(.2),
-                          splashFactory: InkRipple.splashFactory,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Container(
-                              width: screenWidth * .5,
-                              height: screenWidth * .5,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                gradient: const LinearGradient(
-                                  colors: [
-                                    Color.fromARGB(255, 73, 105, 207), // Start color
-                                    Color(0xFF9D6EF6), // End color
-                                  ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomLeft,
-
                                 ),
                               ),
                             ),
@@ -139,7 +104,7 @@ class HomePage extends StatelessWidget {
                                 radius: screenWidth * .55,
                                 borderRadius: BorderRadius.all(
                                     Radius.circular(screenWidth * .5)),
-                                splashColor: Color.fromARGB(255, 73, 105, 207)
+                                splashColor: const Color.fromARGB(255, 73, 105, 207)
                                     .withOpacity(.2),
                                 splashFactory: InkRipple.splashFactory,
                                 child: Padding(
@@ -191,13 +156,8 @@ class HomePage extends StatelessWidget {
                                 ),
                               ),
                             ),
-
                           ],
                         )
-
-                          ),
-                        ),
-
                       ],
                     ),
                     const Spacer(),
@@ -298,15 +258,13 @@ class WavyBackgroundPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // Create a gradient
-
-    final gradient = LinearGradient(
+    const gradient = LinearGradient(
       colors: [
         Color(0xffE6F0FE),
         Color.fromARGB(255, 221, 221, 254),
         Color.fromARGB(255, 223, 218, 255)
       ],
       stops: [0.1, 0.6, 0.7],
-
       begin: Alignment.topRight,
       end: Alignment.bottomLeft,
     );
@@ -352,15 +310,13 @@ class BackgroundPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // Create a gradient
-
-    final gradient = LinearGradient(
+    const gradient = LinearGradient(
       colors: [
         Color(0xffE6F0FE),
         Color.fromARGB(255, 221, 221, 254),
         Color.fromARGB(255, 223, 218, 255)
       ],
       stops: [0.15, 0.4, 0.5],
-
       begin: Alignment.topRight,
       end: Alignment.bottomLeft,
     );
@@ -391,7 +347,7 @@ class BackgroundPainter2 extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // Create a gradient
-    final gradient = LinearGradient(
+    const gradient = LinearGradient(
       colors: [
         Color(0xffE6F0FE),
         Color.fromARGB(255, 221, 221, 254),
@@ -429,7 +385,7 @@ class BackgroundPainter3 extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // Create a gradient
-    final gradient = LinearGradient(
+    const gradient = LinearGradient(
       colors: [
         Color(0xffE6F0FE),
         Color.fromARGB(255, 221, 221, 254),

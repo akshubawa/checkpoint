@@ -38,7 +38,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   google_fonts: ^6.2.1
 
-  uicons_pro: ^1.0.0
+  uicons_pro: ^1.1.0
   glassmorphism_ui: ^0.3.0
   flutter_map: ^7.0.2
 
@@ -51,6 +51,7 @@ dependencies:
   firebase_core: ^2.24.2
   shared_preferences_foundation: ^2.5.2
   workmanager: ^0.5.2
+  package_info_plus: ^8.0.2
 
 
 dev_dependencies:
@@ -77,7 +78,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/images/map.png
+    - assets/images/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
