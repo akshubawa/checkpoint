@@ -1,7 +1,7 @@
 import 'package:checkpoint/screen/ui/widgets/bottom_navigation.dart';
 import 'package:checkpoint/views/attendence.dart';
 import 'package:checkpoint/views/homepage.dart';
-import 'package:checkpoint/views/more.dart';
+import 'package:checkpoint/views/profile.dart';
 import 'package:checkpoint/views/myteam.dart';
 import 'package:flutter/material.dart';
 
@@ -41,7 +41,7 @@ class _ScreenState extends State<Screen> {
         onPageChanged: (index) {
           _currentPageNotifier.value = index;
         },
-        children: [HomePage(), Attendence(), Myteam(), Profile()],
+        children: const [HomePage(), Attendence(), Myteam(), Profile()],
       ),
       bottomNavigationBar: ValueListenableBuilder<int>(
         valueListenable: _currentPageNotifier,

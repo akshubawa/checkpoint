@@ -5,6 +5,11 @@ class Myteam extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('My Team', style: TextStyle(fontWeight: FontWeight.bold),),
+        centerTitle: true,
+      ),
+    );
   }
 }

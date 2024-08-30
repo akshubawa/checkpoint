@@ -5,6 +5,8 @@ import 'package:uicons_pro/uicons_pro.dart';
 class HomePage extends StatelessWidget {
   final String company = "THECOMPANY";
   final String date = "Wednesday, Dec 12";
+
+  const HomePage({super.key});
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -73,7 +75,7 @@ class HomePage extends StatelessWidget {
                                 height: 1,
                                 fontSize: 48,
                                 fontWeight: FontWeight.w600,
-                                color: Color.fromRGBO(73, 84, 99, 1),
+                                color: const Color.fromRGBO(73, 84, 99, 1),
                               ),
                             ),
                             Text(
@@ -102,7 +104,7 @@ class HomePage extends StatelessWidget {
                                 radius: screenWidth * .55,
                                 borderRadius: BorderRadius.all(
                                     Radius.circular(screenWidth * .5)),
-                                splashColor: Color.fromARGB(255, 73, 105, 207)
+                                splashColor: const Color.fromARGB(255, 73, 105, 207)
                                     .withOpacity(.2),
                                 splashFactory: InkRipple.splashFactory,
                                 child: Padding(
@@ -256,7 +258,7 @@ class WavyBackgroundPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // Create a gradient
-    final gradient = LinearGradient(
+    const gradient = LinearGradient(
       colors: [
         Color(0xffE6F0FE),
         Color.fromARGB(255, 221, 221, 254),
@@ -308,7 +310,7 @@ class BackgroundPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // Create a gradient
-    final gradient = LinearGradient(
+    const gradient = LinearGradient(
       colors: [
         Color(0xffE6F0FE),
         Color.fromARGB(255, 221, 221, 254),
@@ -345,7 +347,7 @@ class BackgroundPainter2 extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // Create a gradient
-    final gradient = LinearGradient(
+    const gradient = LinearGradient(
       colors: [
         Color(0xffE6F0FE),
         Color.fromARGB(255, 221, 221, 254),
@@ -383,7 +385,7 @@ class BackgroundPainter3 extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // Create a gradient
-    final gradient = LinearGradient(
+    const gradient = LinearGradient(
       colors: [
         Color(0xffE6F0FE),
         Color.fromARGB(255, 221, 221, 254),
