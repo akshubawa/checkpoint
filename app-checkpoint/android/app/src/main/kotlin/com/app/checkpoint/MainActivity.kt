@@ -1,4 +1,4 @@
-package com.app.checkpoint
+package com.techfusion.checkpoint
 
 import io.flutter.embedding.android.FlutterActivity
 

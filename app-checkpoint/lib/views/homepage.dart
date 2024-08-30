@@ -1,14 +1,21 @@
-
+import 'package:checkpoint/views/geofencing/check_location.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
 class HomePage extends StatelessWidget {
   final String company = "THECOMPANY";
-  final String date = "Wednesday, Dec 12";
+
+  const HomePage({super.key});
+
   @override
   Widget build(BuildContext context) {
+    final String date = DateFormat('EEEE, MMM d, yyyy').format(DateTime.now()); // Format the date
+    final String time = DateFormat('HH:mm').format(DateTime.now()); // Format the time
+
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       body: Stack(
         children: [
@@ -41,22 +48,21 @@ class HomePage extends StatelessWidget {
                             color: Colors.black,
                           ),
                         ),
-                        SizedBox(height: 20),
+                        const SizedBox(height: 20),
                         Column(
-                          mainAxisSize:
-                              MainAxisSize.min, // Wraps the content tightly
+                          mainAxisSize: MainAxisSize.min, // Wraps the content tightly
                           children: [
                             Text(
-                              "12:30",
+                              time, // Display the current time
                               style: GoogleFonts.outfit(
                                 height: 1,
                                 fontSize: 48,
                                 fontWeight: FontWeight.w600,
-                                color: Color.fromRGBO(73, 84, 99, 1),
+                                color: const Color.fromRGBO(73, 84, 99, 1),
                               ),
                             ),
                             Text(
-                              date,
+                              date, // Display the current date
                               style: GoogleFonts.outfit(
                                 fontSize: 24,
                                 color: Colors.grey,
@@ -65,12 +71,12 @@ class HomePage extends StatelessWidget {
                           ],
                         ),
                         InkWell(
-                          onTap: () {},
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => const CheckLocationView()));
+                          },
                           radius: screenWidth * .55,
-                          borderRadius: BorderRadius.all(
-                              Radius.circular(screenWidth * .5)),
-                          splashColor:
-                              Color.fromARGB(255, 73, 105, 207).withOpacity(.2),
+                          borderRadius: BorderRadius.all(Radius.circular(screenWidth * .5)),
+                          splashColor: const Color.fromARGB(255, 73, 105, 207).withOpacity(.2),
                           splashFactory: InkRipple.splashFactory,
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),
@@ -81,8 +87,7 @@ class HomePage extends StatelessWidget {
                                 shape: BoxShape.circle,
                                 gradient: const LinearGradient(
                                   colors: [
-                                    Color.fromARGB(
-                                        255, 73, 105, 207), // Start color
+                                    Color.fromARGB(255, 73, 105, 207), // Start color
                                     Color(0xFF9D6EF6), // End color
                                   ],
                                   begin: Alignment.topLeft,
@@ -118,7 +123,7 @@ class HomePage extends StatelessWidget {
                               ),
                             ),
                           ),
-                        )
+                        ),
                       ],
                     ),
                   ),
@@ -136,7 +141,7 @@ class WavyBackgroundPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // Create a gradient
-    final gradient = LinearGradient(
+    const gradient = LinearGradient(
       colors: [Color(0xffe4e8fb), Color(0xffe8e4ff)],
       stops: [0.2, 0.8],
       begin: Alignment.topRight,
@@ -184,7 +189,7 @@ class BackgroundPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // Create a gradient
-    final gradient = LinearGradient(
+    const gradient = LinearGradient(
       colors: [Color(0xffe4e8fb), Color(0xffe8e4ff)],
       stops: [0.2, 0.8],
       begin: Alignment.topRight,

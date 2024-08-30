@@ -14,7 +14,7 @@
 
 // class _GeofencingViewState extends State<GeofencingView> {
 //   static const locationChannel = MethodChannel("locationPermissionPlatform");
-//   final _eventChannel = const EventChannel("com.app.checkpoint");
+//   final _eventChannel = const EventChannel("com.techfusion.checkpoint");
 //   StreamSubscription? subscription;
 //   bool isPermissionGranted = false;
 

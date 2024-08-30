@@ -38,11 +38,18 @@ dependencies:
   google_fonts: ^6.2.1
   unicons: ^3.0.0
   geolocator: ^13.0.1
+  intl: ^0.19.0
+  awesome_notifications: ^0.9.3+1
+  firebase_messaging: ^14.7.10
+  shared_preferences: ^2.3.2
+  firebase_core: ^2.24.2
+  shared_preferences_foundation: ^2.5.2
+  workmanager: ^0.5.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
+ 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your

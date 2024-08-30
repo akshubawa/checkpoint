@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -38,7 +39,9 @@ class _CheckLocationViewState extends State<CheckLocationView> {
     calculateDistance(latitude, longitude, targetLatitude, targetLongitude);
   }
 
-  void calculateDistance(double startLatitude, double startLongitude, double endLatitude, double endLongitude) {
+  void calculateDistance(double startLatitude, double startLongitude, double endLatitude, double endLongitude) async{
+    // String? deviceToken = await FirebaseMessaging.instance.getToken();
+    // debugPrint(deviceToken);
     distanceInMeters = Geolocator.distanceBetween(
       startLatitude,
       startLongitude,
