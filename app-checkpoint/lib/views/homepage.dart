@@ -1,10 +1,12 @@
-
+import 'package:checkpoint/views/geofencing/check_location.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class HomePage extends StatelessWidget {
   final String company = "THECOMPANY";
   final String date = "Wednesday, Dec 12";
+
+  const HomePage({super.key});
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -41,7 +43,7 @@ class HomePage extends StatelessWidget {
                             color: Colors.black,
                           ),
                         ),
-                        SizedBox(height: 20),
+                        const SizedBox(height: 20),
                         Column(
                           mainAxisSize:
                               MainAxisSize.min, // Wraps the content tightly
@@ -52,7 +54,7 @@ class HomePage extends StatelessWidget {
                                 height: 1,
                                 fontSize: 48,
                                 fontWeight: FontWeight.w600,
-                                color: Color.fromRGBO(73, 84, 99, 1),
+                                color: const Color.fromRGBO(73, 84, 99, 1),
                               ),
                             ),
                             Text(
@@ -65,12 +67,14 @@ class HomePage extends StatelessWidget {
                           ],
                         ),
                         InkWell(
-                          onTap: () {},
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (context)=> const CheckLocationView()));
+                          },
                           radius: screenWidth * .55,
                           borderRadius: BorderRadius.all(
                               Radius.circular(screenWidth * .5)),
                           splashColor:
-                              Color.fromARGB(255, 73, 105, 207).withOpacity(.2),
+                              const Color.fromARGB(255, 73, 105, 207).withOpacity(.2),
                           splashFactory: InkRipple.splashFactory,
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),
@@ -136,7 +140,7 @@ class WavyBackgroundPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // Create a gradient
-    final gradient = LinearGradient(
+    const  gradient = LinearGradient(
       colors: [Color(0xffe4e8fb), Color(0xffe8e4ff)],
       stops: [0.2, 0.8],
       begin: Alignment.topRight,
@@ -184,7 +188,7 @@ class BackgroundPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // Create a gradient
-    final gradient = LinearGradient(
+    const gradient = LinearGradient(
       colors: [Color(0xffe4e8fb), Color(0xffe8e4ff)],
       stops: [0.2, 0.8],
       begin: Alignment.topRight,
