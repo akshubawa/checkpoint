@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
 
 const employeeSchema = new mongoose.Schema(
   {
@@ -37,8 +38,6 @@ const employeeSchema = new mongoose.Schema(
     },
     department: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "department",
-      required: true,
     },
     role: {
       type: String,
@@ -56,11 +55,11 @@ const employeeSchema = new mongoose.Schema(
 );
 
 // Pre-save hook to hash password before saving using hashing
-userSchema.pre("save", async function (next) {
+employeeSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   next();
 });
 
-module.exports = mongoose.model("employee", userSchema);
+module.exports = mongoose.model("employee", employeeSchema);
