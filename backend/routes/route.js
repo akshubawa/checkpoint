@@ -6,6 +6,8 @@ const {
   createDepartment,
   updateDepartment,
   getDepartmentDetails,
+  checkIn,
+  checkOut,
 } = require("../controllers/Office");
 const {
   createAccount,
@@ -28,5 +30,8 @@ router.get("/get-account-details", auth, getUserDetails);
 router.post("/create-department", createDepartment);
 router.post("/update-department", updateDepartment);
 router.get("/get-department-details", getDepartmentDetails);
+
+router.post("/checkin", auth, checkIn);
+router.post("/checkout", auth, checkOut);
 
 module.exports = router;

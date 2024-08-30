@@ -1,5 +1,7 @@
+const Employee = require("../models/employee.models");
 const Office = require("../models/office.models");
 const Department = require("../models/department.models");
+const AttendenceSchema = require("../models/attendence.models");
 
 exports.createOffice = async (req, res) => {
   try {
@@ -284,3 +286,203 @@ exports.getDepartmentDetails = async (req, res) => {
     });
   }
 };
+
+exports.checkIn = async (req, res) => {
+  try {
+    const { id } = req.user;
+
+    const user = await Employee.findById(id);
+
+    if (!user) {
+      return res.status(403).json({
+        success: false,
+        message: "User not found with this id.",
+      });
+    }
+
+    const departmentId = user.departmentId;
+    const department = await Department.findById(departmentId);
+
+    if (!department) {
+      return res.status(403).json({
+        success: false,
+        message: "Department not found with this id.",
+      });
+    }
+
+    // Get current time
+    const currentTime = new Date();
+
+    const newAttendence = new AttendenceSchema({
+      employee: id,
+      checkInTime: currentTime,
+      checkOutTime: null,
+    });
+
+    // Check if check-in is late
+    if (currentTime > department.expectedCheckInTime) {
+      newAttendence.isLateCheckIn = true;
+    } else {
+      newAttendence.isLateCheckIn = false;
+    }
+
+    await newAttendence.save();
+
+    user.allAttendence.push(newAttendence._id);
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Checked in successfully.",
+      attendence: newAttendence,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Error occurred while checking in",
+      error: err.message,
+    });
+  }
+};
+
+exports.checkOut = async (req, res) => {
+  try {
+    const { id } = req.user;
+
+    // Find the user
+    const user = await Employee.findById(id);
+    if (!user) {
+      return res.status(403).json({
+        success: false,
+        message: "User not found with this id.",
+      });
+    }
+
+    // Find the attendance record for today
+    const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD format
+    console.log("this is the today date:: ", today);
+    const attendence = await AttendenceSchema.findOne({
+      employee: id,
+      date: {
+        $gte: new Date(today),
+        $lt: new Date(new Date(today).setDate(new Date(today).getDate() + 1)),
+      },
+    });
+
+    console.log("this is the attendance:: ", attendence);
+
+    if (!attendence) {
+      return res.status(404).json({
+        success: false,
+        message: "No attendance record found for today.",
+      });
+    }
+
+    // Get current time
+    const currentTime = new Date();
+
+    // Ensure checkInTime is a Date object
+    const checkInTime = new Date(attendence.checkInTime);
+
+    if (isNaN(checkInTime.getTime())) {
+      throw new Error("Invalid check-in time format.");
+    }
+
+    // Update checkout time
+    attendence.checkOutTime = currentTime;
+
+    // Calculate total working hours
+    const workingHours = (currentTime - checkInTime) / (1000 * 60 * 60); // in hours
+
+    if (isNaN(workingHours)) {
+      throw new Error("Invalid working hours calculation.");
+    }
+
+    attendence.totalWorkingHours = workingHours;
+
+    // Check if the user left early
+    const department = await Department.findById(user.departmentId);
+    if (!department) {
+      return res.status(404).json({
+        success: false,
+        message: "Department not found with this id.",
+      });
+    }
+
+    if (currentTime < department.expectedCheckOutTime) {
+      attendence.isEarlyCheckout = true;
+    } else {
+      attendence.isEarlyCheckout = false;
+    }
+
+    // Save the updated attendance record
+    await attendence.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Checked out successfully.",
+      attendence,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Error occurred while checking out",
+      error: err.message,
+    });
+  }
+};
+
+// exports.officeExitRecord = async (req, res) => {
+//   try {
+//     const { id } = req.user;
+
+//     const user = await Employee.findById(id);
+
+//     if (!user) {
+//       return res.status(403).json({
+//         success: false,
+//         message: "User not found with this id.",
+//       });
+//     }
+
+//     const today = new Date().toISOString().split("T")[0];
+
+//     const attendence = await AttendenceSchema.findOne({
+//       employee: id,
+//       date: {
+//         $gte: new Date(today),
+//         $lt: new Date(new Date(today).setDate(new Date(today).getDate() + 1)),
+//       },
+//     });
+
+//     if (!attendence) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "No attendance record found for today.",
+//       });
+//     }
+
+//     const currentTime = new Date();
+
+//     const exitTime = currentTime;
+//     const returnTime = null;
+//     const { reason } = req.body;
+
+//     const exitRecord = {
+//       exitTime,
+//       returnTime,
+//       reason,
+//     };
+
+//     attendence.officeExitRecords.push(exitRecord);
+
+//     await attendence.save();
+
+//   } catch (err) {
+//     return res.status(500).json({
+//       success: false,
+//       message: "Error occurred while recording the exit",
+//       error: err.message,
+//     });
+//   }
+// };
