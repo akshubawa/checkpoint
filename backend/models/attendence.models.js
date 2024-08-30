@@ -26,14 +26,16 @@ const attendenceSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  officeExitRecords: [{
-    exitTime: Date,
-    returnTime: Date,
-    reason: String
-  }],
+  officeExitRecords: [
+    {
+      exitTime: Date,
+      returnTime: Date,
+      reason: String,
+    },
+  ],
   totalWorkingHours: {
-    type: Number
-  }
+    type: Number,
+  },
 });
 
 attendenceSchema.pre("save", async function (next) {
@@ -45,16 +47,16 @@ attendenceSchema.pre("save", async function (next) {
 
   if (department) {
     if (attendence.checkInTime > department.expectedCheckIntime) {
-      attendence.isLate = true;
+      attendence.isLateCheckIn = true;
     } else {
-      attendence.isLate = false;
+      attendence.isLateCheckIn = false;
     }
   }
 
   if (attendence.checkOutTime < department.expectedCheckOutTime) {
-    attendence.isWentEarly = true;
+    attendence.isEarlyCheckout = true;
   } else {
-    attendence.isWentEarly = false;
+    attendence.isEarlyCheckout = false;
   }
 });
 

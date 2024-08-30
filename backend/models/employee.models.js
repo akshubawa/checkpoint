@@ -7,7 +7,7 @@ const employeeSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    middleName:{
+    middleName: {
       type: String,
       trim: true,
     },
@@ -52,7 +52,7 @@ const employeeSchema = new mongoose.Schema(
       },
     ],
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
-module.exports = mongoose.model("employee", userSchema);
+module.exports = mongoose.model("employee", employeeSchema);
