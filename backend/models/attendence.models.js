@@ -5,9 +5,9 @@ const attendenceSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  userData: {
+  employee: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "user",
+    ref: "employee",
     required: true,
   },
   checkInTime: {
@@ -18,18 +18,23 @@ const attendenceSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  isLate: {
+  isLateCheckIn: {
     type: Boolean,
     default: false,
   },
-  isWentEarly: {
+  isEarlyCheckout: {
     type: Boolean,
     default: false,
   },
-  department: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "department",
-    required: true,
+  officeExitRecords: [
+    {
+      exitTime: Date,
+      returnTime: Date,
+      reason: String,
+    },
+  ],
+  totalWorkingHours: {
+    type: Number,
   },
 });
 
@@ -42,16 +47,16 @@ attendenceSchema.pre("save", async function (next) {
 
   if (department) {
     if (attendence.checkInTime > department.expectedCheckIntime) {
-      attendence.isLate = true;
+      attendence.isLateCheckIn = true;
     } else {
-      attendence.isLate = false;
+      attendence.isLateCheckIn = false;
     }
   }
 
   if (attendence.checkOutTime < department.expectedCheckOutTime) {
-    attendence.isWentEarly = true;
+    attendence.isEarlyCheckout = true;
   } else {
-    attendence.isWentEarly = false;
+    attendence.isEarlyCheckout = false;
   }
 });
 
