@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "388209173657",
+    "project_id": "app-checkpoint",
+    "storage_bucket": "app-checkpoint.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:388209173657:android:e142898dfab888e4a24408",
+        "android_client_info": {
+          "package_name": "com.app.checkpoint"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDRSJ5qWd8T9DByWrrpBjHetMDe0YN9kQE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
