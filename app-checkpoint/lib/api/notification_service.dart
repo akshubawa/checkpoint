@@ -8,7 +8,9 @@ class NotificationService {
 
   static Future<void> initializeNotification() async {
     String? deviceToken = await firebaseMessaging.getToken();
+    String? deviceApnsToken = await firebaseMessaging.getAPNSToken();
     debugPrint(deviceToken);
+    debugPrint(deviceApnsToken);
 
     await AwesomeNotifications().setListeners(
       onActionReceivedMethod: onActionReceivedMethod,

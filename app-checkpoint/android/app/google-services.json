@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:388209173657:android:e142898dfab888e4a24408",
+        "mobilesdk_app_id": "1:388209173657:android:c3008d1422270085a24408",
         "android_client_info": {
-          "package_name": "com.app.checkpoint"
+          "package_name": "com.techfusion.checkpoint"
         }
       },
       "oauth_client": [],
