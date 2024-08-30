@@ -14,7 +14,7 @@ class HomePage extends StatelessWidget {
         children: [
           // Wavy background shape
           CustomPaint(
-            size: Size(screenWidth * .6, screenHeight * 0.25),
+            size: Size(screenWidth * 0.6, screenHeight * 0.25),
             painter: WavyBackgroundPainter(),
           ),
           Positioned(

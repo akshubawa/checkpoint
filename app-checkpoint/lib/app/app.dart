@@ -10,9 +10,15 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Checkpoint',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
+              useMaterial3: true,
+              colorScheme: MyThemes.lightColorScheme,
+              fontFamily: GoogleFonts.nunitoSans().fontFamily),
+          darkTheme: ThemeData(
+              useMaterial3: true,
+              colorScheme: MyThemes.darkColorScheme,
+              fontFamily: GoogleFonts.nunitoSans().fontFamily),
+          themeMode: ThemeMode.system,
+          
       home: HomePage(),
     );
   }
