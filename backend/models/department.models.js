@@ -25,19 +25,12 @@ const departmentSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    workingDays: {
-      type: [String],
-      enum: [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday",
-      ],
-      default: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-    },
+    workingDays: [
+      {
+        type: String,
+        required: true,
+      },
+    ],
     allUser: [
       {
         type: mongoose.Schema.Types.ObjectId,
