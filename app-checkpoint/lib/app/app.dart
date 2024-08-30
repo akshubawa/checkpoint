@@ -1,5 +1,4 @@
 import 'package:checkpoint/screen/ui/screen.dart';
-import 'package:checkpoint/views/homepage.dart';
 import 'package:flutter/material.dart';
 
 class MyApp extends StatelessWidget {
