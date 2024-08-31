@@ -5,49 +5,51 @@ const officeSchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
     },
     address: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
     },
     city: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
     },
     state: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
     },
     country: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
     },
     zipCode: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
     },
-    latitude: {
-      type: Number,
-      required: true
-    },
-    longitude: {
-      type: Number,
-      required: true
+    coordinates: {
+      latitude: {
+        type: Number,
+        required: true,
+      },
+      longitude: {
+        type: Number,
+        required: true,
+      },
     },
     radius: {
       type: Number,
       required: true,
-      default: 200  // in meters
+      default: 200, // in meters
     },
     isActive: {
       type: Boolean,
-      default: true
+      default: true,
     },
     allDepartments: [
       {

@@ -3,6 +3,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const database = require("./config/database");
 const router = require("./routes/route");
+const { sendNotification } = require("./utils/notify");
 
 const app = express();
 app.use(express.json());
@@ -16,6 +17,8 @@ database.connect();
 const PORT = process.env.PORT || 4000;
 
 app.use("/api/v1/", router);
+
+// sendNotification("this is the title", "this is the body");
 
 app.get("/", (req, res) => {
   return res.status(200).json({

@@ -4,7 +4,7 @@ const employeeSchema = new mongoose.Schema(
   {
     firstName: {
       type: String,
-      required: true,
+      // required: true,
       trim: true,
     },
     middleName: {
@@ -13,7 +13,7 @@ const employeeSchema = new mongoose.Schema(
     },
     lastName: {
       type: String,
-      required: true,
+      // required: true,
       trim: true,
     },
     email: {
@@ -35,7 +35,7 @@ const employeeSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    department: {
+    departmentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "department",
       required: true,
@@ -44,6 +44,9 @@ const employeeSchema = new mongoose.Schema(
       type: String,
       enum: ["employee", "manager", "admin"],
       default: "employee",
+    },
+    token: {
+      type: String,
     },
     allAttendence: [
       {
@@ -56,4 +59,3 @@ const employeeSchema = new mongoose.Schema(
 );
 
 module.exports = mongoose.model("employee", employeeSchema);
-
