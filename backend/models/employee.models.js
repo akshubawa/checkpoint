@@ -48,6 +48,16 @@ const employeeSchema = new mongoose.Schema(
     token: {
       type: String,
     },
+    deviceInfo: {
+      platform: {
+        type: String,
+        required: true,
+      },
+      deviceToken: {
+        type: "String",
+        required: true,
+      },
+    },
     allAttendence: [
       {
         type: mongoose.Schema.Types.ObjectId,
