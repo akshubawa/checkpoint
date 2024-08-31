@@ -412,10 +412,11 @@ exports.checkOut = async (req, res) => {
       });
     }
 
-    // Find the attendance record for today
-    const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD format
-    console.log("this is the today date:: ", today);
-    const attendence = await AttendenceSchema.findOne({
+    // Get today's date in YYYY-MM-DD format
+    const today = new Date().toISOString().split("T")[0];
+
+    // Find all attendance records for today
+    const attendances = await AttendenceSchema.find({
       employee: id,
       date: {
         $gte: new Date(today),
@@ -423,27 +424,29 @@ exports.checkOut = async (req, res) => {
       },
     });
 
-    console.log("this is the attendance:: ", attendence);
-
-    if (!attendence) {
+    // If no attendance record found for today
+    if (attendances.length === 0) {
       return res.status(404).json({
         success: false,
         message: "No attendance record found for today.",
       });
     }
 
+    // Get the last attendance record for today
+    const lastAttendance = attendances[attendances.length - 1];
+
     // Get current time
     const currentTime = new Date();
 
     // Ensure checkInTime is a Date object
-    const checkInTime = new Date(attendence.checkInTime);
+    const checkInTime = new Date(lastAttendance.checkInTime);
 
     if (isNaN(checkInTime.getTime())) {
       throw new Error("Invalid check-in time format.");
     }
 
     // Update checkout time
-    attendence.checkOutTime = currentTime;
+    lastAttendance.checkOutTime = currentTime;
 
     // Calculate total working hours
     const workingHours = (currentTime - checkInTime) / (1000 * 60 * 60); // in hours
@@ -452,7 +455,7 @@ exports.checkOut = async (req, res) => {
       throw new Error("Invalid working hours calculation.");
     }
 
-    attendence.totalWorkingHours = workingHours;
+    lastAttendance.totalWorkingHours = workingHours;
 
     // Check if the user left early
     const department = await Department.findById(user.departmentId);
@@ -464,18 +467,18 @@ exports.checkOut = async (req, res) => {
     }
 
     if (currentTime < department.expectedCheckOutTime) {
-      attendence.isEarlyCheckout = true;
+      lastAttendance.isEarlyCheckout = true;
     } else {
-      attendence.isEarlyCheckout = false;
+      lastAttendance.isEarlyCheckout = false;
     }
 
     // Save the updated attendance record
-    await attendence.save();
+    await lastAttendance.save();
 
     return res.status(200).json({
       success: true,
       message: "Checked out successfully.",
-      attendence,
+      attendence: lastAttendance,
     });
   } catch (err) {
     return res.status(500).json({
@@ -598,6 +601,85 @@ exports.officeEnterRecord = async (req, res) => {
       success: true,
       message: "Office entry recorded successfully.",
       attendance,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: err.message,
+    });
+  }
+};
+
+exports.getAllAttendence = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    let { month, year } = req.body;
+
+    console.log("this is the user id:: ", userId);
+
+    const user = await Employee.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Map month names to month indices
+    const monthNames = {
+      january: 0,
+      february: 1,
+      march: 2,
+      april: 3,
+      may: 4,
+      june: 5,
+      july: 6,
+      august: 7,
+      september: 8,
+      october: 9,
+      november: 10,
+      december: 11,
+    };
+
+    // Convert month to lowercase for case-insensitivity
+    month = month.toLowerCase();
+
+    const monthIndex = monthNames[month];
+    const yearNumber = parseInt(year, 10);
+
+    // Validate month and year
+    if (monthIndex === undefined || isNaN(yearNumber)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid month or year provided.",
+      });
+    }
+
+    // Calculate start and end dates for the month
+    const startDate = new Date(yearNumber, monthIndex, 1);
+    const endDate = new Date(yearNumber, monthIndex + 1, 1); // start of the next month
+
+    const attendence = await AttendenceSchema.find({
+      employee: userId,
+      date: {
+        $gte: startDate,
+        $lt: endDate,
+      },
+    });
+
+    if (attendence.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No attendance record found for the specified month and year",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Attendance records found",
+      attendence: attendence,
     });
   } catch (err) {
     return res.status(500).json({

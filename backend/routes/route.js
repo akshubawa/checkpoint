@@ -12,6 +12,7 @@ const {
   officeEnterRecord,
   officeExitRecord,
   getAllOffices,
+  getAllAttendence,
 } = require("../controllers/Office");
 const {
   createAccount,
@@ -33,6 +34,7 @@ router.post("/signup", createAccount);
 router.post("/login", loginAccount);
 router.post("/update-account", auth, updateAccount);
 router.get("/get-account-details", auth, getUserDetails);
+router.get("/get-all-attendence", auth, getAllAttendence);
 
 router.post("/create-department", createDepartment);
 router.post("/update-department", updateDepartment);
