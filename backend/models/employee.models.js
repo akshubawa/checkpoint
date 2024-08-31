@@ -58,7 +58,7 @@ const employeeSchema = new mongoose.Schema(
         required: true,
       },
       deviceToken: {
-        type: "String",
+        type: String,
         required: true,
       },
     },

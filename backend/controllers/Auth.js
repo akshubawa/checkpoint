@@ -13,6 +13,7 @@ exports.createAccount = async (req, res) => {
       firstName,
       lastName,
       middleName,
+      deviceInfo,
     } = req.body;
 
     if (
@@ -21,7 +22,8 @@ exports.createAccount = async (req, res) => {
       !departmentName ||
       !role ||
       !firstName ||
-      !lastName
+      !lastName ||
+      !deviceInfo
     ) {
       return res.status(400).json({
         success: false,
@@ -80,6 +82,7 @@ exports.createAccount = async (req, res) => {
       departmentId: department._id,
       role,
       employeeId,
+      deviceInfo,
     });
 
     // Save the new employee
@@ -127,14 +130,26 @@ exports.createAccount = async (req, res) => {
 
 exports.loginAccount = async (req, res) => {
   try {
-    const { identifier, password } = req.body;
+    const { identifier, password, deviceInfo } = req.body;
 
-    if (!identifier || !password) {
+    // console.log("identifier",identifier);
+    // console.log("password", password);
+    // console.log("platform", deviceInfo);
+    // cons;
+
+    if (!identifier || !password || !deviceInfo) {
       return res.status(400).json({
         success: false,
-        message: "Please enter both identifier and password.",
+        message: "Please enter all required fields.",
       });
     }
+
+    // if (!identifier || !password) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: "Please enter both identifier and password.",
+    //   });
+    // }
 
     // Find user by either email or employeeId
     const user = await Employee.findOne({
@@ -182,6 +197,7 @@ exports.loginAccount = async (req, res) => {
         email: user.email,
         employeeId: user.employeeId,
         role: user.role,
+        deviceInfo: deviceInfo,
         departmentId: user.departmentId,
       },
     });
@@ -197,8 +213,15 @@ exports.loginAccount = async (req, res) => {
 exports.updateAccount = async (req, res) => {
   try {
     const { id } = req.user; // Assuming userId is passed as a URL parameter
-    const { firstName, middleName, lastName, email, password, departmentId } =
-      req.body;
+    const {
+      firstName,
+      middleName,
+      lastName,
+      email,
+      password,
+      departmentId,
+      deviceInfo,
+    } = req.body;
 
     // Find the employee by userId
     // console.log("this is the id", id);
