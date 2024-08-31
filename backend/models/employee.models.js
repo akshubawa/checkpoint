@@ -38,7 +38,7 @@ const employeeSchema = new mongoose.Schema(
     },
     departmentName: {
       type: String,
-      required: true,
+      // required: true,
       trim: true,
     },
     departmentId: {

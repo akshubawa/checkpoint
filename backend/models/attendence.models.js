@@ -28,6 +28,7 @@ const attendenceSchema = new mongoose.Schema({
   },
   officeExitRecords: [
     {
+      flag: Boolean,
       exitTime: Date,
       returnTime: Date,
       reason: String,
