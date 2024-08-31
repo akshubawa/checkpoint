@@ -1,9 +1,19 @@
 "use client";
 
 import AdminDashboard from "@/components/final-admin-dashboard-with-graphs";
-import React from "react";
+import React, { useEffect } from "react";
 
-const page = () => {
+const Page = () => {
+  useEffect(() => {
+    const getToken = async () => {
+      const token = localStorage.getItem("adminToken");
+      if (!token) {
+        window.location.href = "/login";
+      }
+    };
+    getToken();
+  }, []);
+
   return (
     <div>
       <AdminDashboard />
@@ -11,4 +21,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;
