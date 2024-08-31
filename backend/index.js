@@ -23,10 +23,10 @@ app.use("/api/v1/", router);
 app.get("/", (req, res) => {
   return res.status(200).json({
     success: true,
-    message: "your server is up and running......",
+    message: "Server is up and running......",
   });
 });
 
 app.listen(PORT, () => {
-  console.log(`your server is running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });

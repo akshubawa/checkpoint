@@ -19,6 +19,8 @@ const {
 const { auth } = require("../middlewares/auth");
 const router = express.Router();
 
+const { sendDeviceToken } = require("../controllers/Employee");
+
 router.post("/createoffice", createOffice);
 router.put("/updateoffice", updateOffice);
 router.get("/officedetails", getOfficeDetails);
@@ -35,5 +37,7 @@ router.get("/get-all-departments", getAllDepartments);
 
 router.post("/checkin", auth, checkIn);
 router.post("/checkout", auth, checkOut);
+
+router.post("/send-device-token", sendDeviceToken);
 
 module.exports = router;
