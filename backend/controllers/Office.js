@@ -143,6 +143,31 @@ exports.getOfficeDetails = async (req, res) => {
   }
 };
 
+exports.getAllOffices = async (req, res) => {
+  try {
+    const offices = await Office.find();
+
+    if (!offices) {
+      return res.status(500).json({
+        success: false,
+        message: "No office found.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "All offices details retrived successfully.",
+      offices: offices,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Error occured while getting the details for the office.",
+      error: err.message,
+    });
+  }
+};
+
 exports.createDepartment = async (req, res) => {
   try {
     const {
