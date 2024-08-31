@@ -461,57 +461,124 @@ exports.checkOut = async (req, res) => {
   }
 };
 
-// exports.officeExitRecord = async (req, res) => {
-//   try {
-//     const { id } = req.user;
+exports.officeExitRecord = async (req, res) => {
+  try {
+    const { id } = req.user;
 
-//     const user = await Employee.findById(id);
+    console.log("this is the id::", id);
 
-//     if (!user) {
-//       return res.status(403).json({
-//         success: false,
-//         message: "User not found with this id.",
-//       });
-//     }
+    const user = await Employee.findById(id);
 
-//     const today = new Date().toISOString().split("T")[0];
+    if (!user) {
+      return res.status(403).json({
+        success: false,
+        message: "User not found with this id.",
+      });
+    }
 
-//     const attendence = await AttendenceSchema.findOne({
-//       employee: id,
-//       date: {
-//         $gte: new Date(today),
-//         $lt: new Date(new Date(today).setDate(new Date(today).getDate() + 1)),
-//       },
-//     });
+    // console.log("user info:: ", user);
 
-//     if (!attendence) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "No attendance record found for today.",
-//       });
-//     }
+    const today = new Date().toISOString().split("T")[0];
 
-//     const currentTime = new Date();
+    const attendence = await AttendenceSchema.findOne({
+      employee: id,
+      date: {
+        $gte: new Date(today),
+        $lt: new Date(new Date(today).setDate(new Date(today).getDate() + 1)),
+      },
+    });
 
-//     const exitTime = currentTime;
-//     const returnTime = null;
-//     const { reason } = req.body;
+    console.log("attendance info:: ", attendence);
 
-//     const exitRecord = {
-//       exitTime,
-//       returnTime,
-//       reason,
-//     };
+    if (!attendence) {
+      return res.status(404).json({
+        success: false,
+        message: "No attendance record found for today.",
+      });
+    }
 
-//     attendence.officeExitRecords.push(exitRecord);
+    const currentTime = new Date();
 
-//     await attendence.save();
+    const exitTime = currentTime;
+    flag = true;
+    const returnTime = null;
+    const { reason } = req.body;
 
-//   } catch (err) {
-//     return res.status(500).json({
-//       success: false,
-//       message: "Error occurred while recording the exit",
-//       error: err.message,
-//     });
-//   }
-// };
+    const exitRecord = {
+      flag,
+      exitTime,
+      returnTime,
+      reason,
+    };
+
+    attendence.officeExitRecords.push(exitRecord);
+
+    await attendence.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Office exit recorded successfully.",
+      attendence: attendence,
+      exitRecord: exitRecord,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Error occurred while recording the exit",
+      error: err.message,
+    });
+  }
+};
+
+exports.officeEnterRecord = async (req, res) => {
+  try {
+    const { id } = req.user;
+
+    // Find the latest attendance record for the employee
+    const attendance = await AttendenceSchema.findOne({
+      employee: id,
+    }).sort({
+      date: -1,
+    });
+
+    console.log("attendance info::", attendance);
+
+    if (!attendance) {
+      return res.status(404).json({
+        success: false,
+        message: "Attendance record not found.",
+      });
+    }
+
+    // Find the latest exit record with flag set to true
+    const lastExitRecord = attendance.officeExitRecords.find(
+      (record) => record.flag == true
+    );
+
+    if (!lastExitRecord) {
+      return res.status(400).json({
+        success: false,
+        message: "No active exit record found for the employee.",
+      });
+    }
+
+    // Update the flag to false and set the return time
+    lastExitRecord.flag = false;
+    lastExitRecord.returnTime = new Date();
+
+    // Save the updated attendance record
+    await attendance.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Office entry recorded successfully.",
+      attendance,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: err.message,
+    });
+  }
+};

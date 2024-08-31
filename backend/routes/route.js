@@ -9,6 +9,8 @@ const {
   checkIn,
   checkOut,
   getAllDepartments,
+  officeEnterRecord,
+  officeExitRecord,
 } = require("../controllers/Office");
 const {
   createAccount,
@@ -37,6 +39,8 @@ router.get("/get-all-departments", getAllDepartments);
 
 router.post("/checkin", auth, checkIn);
 router.post("/checkout", auth, checkOut);
+router.post("/office-exit-record", auth, officeExitRecord);
+router.post("/office-enter-record", auth, officeEnterRecord);
 
 router.post("/send-device-token", sendDeviceToken);
 
