@@ -450,7 +450,7 @@ exports.checkIn = async (req, res) => {
     }
 
     await newAttendence.save();
-
+    user.isActive = true;
     user.allAttendence.push(newAttendence._id);
     await user.save();
 
@@ -540,6 +540,9 @@ exports.checkOut = async (req, res) => {
     } else {
       lastAttendance.isEarlyCheckout = false;
     }
+
+    user.isActive = false;
+    await user.save();
 
     // Save the updated attendance record
     await lastAttendance.save();
@@ -690,9 +693,9 @@ exports.getAllAttendence = async (req, res) => {
     const user = await Employee.findById(userId);
 
     if (!user) {
-      return res.status(404).json({
+      return res.status(403).json({
         success: false,
-        message: "User not found",
+        message: "User not found , user id in not valid.",
       });
     }
 
@@ -781,6 +784,58 @@ exports.offSiteWorkRequest = async (req, res) => {
       date,
       type,
       reason,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: err.message,
+    });
+  }
+};
+
+exports.getCheckinCheckoutStatus = async (req, res) => {
+  try {
+    const { id } = req.user;
+
+    // Find the user
+    const user = await Employee.findById(id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Get today's date in YYYY-MM-DD format
+    const today = new Date().toISOString().split("T")[0];
+
+    // Find all attendance records for today
+    const attendances = await AttendenceSchema.find({
+      employee: id,
+      date: {
+        $gte: new Date(today),
+        $lt: new Date(new Date(today).setDate(new Date(today).getDate() + 1)),
+      },
+    });
+
+    // If no attendance record found for today
+    if (attendances.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No attendance record found for today.",
+      });
+    }
+
+    // Get the last attendance record for today
+    const lastAttendance = attendances[attendances.length - 1];
+
+    return res.status(200).json({
+      success: true,
+      message: "Check-in and check-out status retrieved successfully.",
+      checkInTime: lastAttendance.checkInTime,
+      checkOutTime: lastAttendance.checkOutTime,
     });
   } catch (err) {
     return res.status(500).json({

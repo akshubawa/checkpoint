@@ -34,11 +34,10 @@ const employeeSchema = new mongoose.Schema(
     },
     isActive: {
       type: Boolean,
-      default: true,
+      default: false,
     },
     departmentName: {
       type: String,
-      // required: true,
       trim: true,
     },
     departmentId: {

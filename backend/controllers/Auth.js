@@ -357,3 +357,30 @@ exports.getUserDetails = async (req, res) => {
     });
   }
 };
+
+exports.getIsActive = async (req, res) => {
+  try {
+    const { id } = req.user;
+
+    const user = await Employee.findById(id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "User found",
+      isActive: user.isActive,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: err.message,
+    });
+  }
+};
