@@ -14,12 +14,14 @@ const {
   getAllOffices,
   getAllAttendence,
   createOffsideLocation,
+  getCheckinCheckoutStatus,
 } = require("../controllers/Office");
 const {
   createAccount,
   loginAccount,
   updateAccount,
   getUserDetails,
+  getIsActive,
 } = require("../controllers/Auth");
 const { auth } = require("../middlewares/auth");
 const router = express.Router();
@@ -38,6 +40,8 @@ router.post("/login", loginAccount);
 router.post("/update-account", auth, updateAccount);
 router.get("/get-account-details", auth, getUserDetails);
 router.get("/get-all-attendence", auth, getAllAttendence);
+router.get("/get-is-active", auth, getIsActive);
+router.get("/get-checkin-checkout", auth, getCheckinCheckoutStatus);
 
 router.post("/create-department", createDepartment);
 router.post("/update-department", updateDepartment);
