@@ -57,7 +57,6 @@ dependencies:
   flutter_spinkit: ^5.2.1
   jwt_decoder: ^2.0.1
 
-
   http: any
 dev_dependencies:
   flutter_test:
