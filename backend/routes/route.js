@@ -8,6 +8,7 @@ const {
   getDepartmentDetails,
   checkIn,
   checkOut,
+  getAllDepartments,
 } = require("../controllers/Office");
 const {
   createAccount,
@@ -30,6 +31,7 @@ router.get("/get-account-details", auth, getUserDetails);
 router.post("/create-department", createDepartment);
 router.post("/update-department", updateDepartment);
 router.get("/get-department-details", getDepartmentDetails);
+router.get("/get-all-departments", getAllDepartments);
 
 router.post("/checkin", auth, checkIn);
 router.post("/checkout", auth, checkOut);

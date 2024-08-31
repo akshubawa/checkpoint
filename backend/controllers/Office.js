@@ -287,6 +287,35 @@ exports.getDepartmentDetails = async (req, res) => {
   }
 };
 
+exports.getAllDepartments = async (req, res) => {
+  try {
+    const { officeName } = req.body;
+
+    const office = await Office.findOne({ name: officeName })
+      .populate("allDepartments")
+      .exec();
+
+    if (!office) {
+      return res.status(500).json({
+        success: false,
+        message: "Office not found.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Department details retrived successfully.",
+      department: office.allDepartments,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Error occured while getting the details for the department.",
+      error: err.message,
+    });
+  }
+};
+
 exports.checkIn = async (req, res) => {
   try {
     const { id } = req.user;
