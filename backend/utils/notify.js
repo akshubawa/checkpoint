@@ -5,10 +5,16 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
-const registrationToken =
-  "c_jSiI3sAEl5gd3Mreog2r:APA91bEXF0mSTN6ezvcXDA8k_c4uFktxMo6zLbQWa45ke7n2OhsenJ1kgOIEYmf-ppGNE6ZrHjYmlOfd2mLpTtgnp1OHvQkmbDqstrXpYsn0W_pwBv0RpZGG2Ohd8aDNmiLckPTdVTqm";
+const sendNotification = async (employeeId, title, body) => {
+  // Find the employee by ID and get the deviceToken
+  const employee = await Employee.findById(employeeId);
 
-const sendNotification = async (title, body) => {
+  if (!employee || !employee.deviceToken) {
+    throw new Error("Employee not found or device token is missing.");
+  }
+
+  const registrationToken = employee.deviceInfo.deviceToken;
+
   const messageSend = {
     token: registrationToken,
     notification: {
