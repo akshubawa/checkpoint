@@ -8,7 +8,7 @@ exports.createAccount = async (req, res) => {
     const {
       email,
       password,
-      departmentId,
+      departmentName,
       role,
       firstName,
       lastName,
@@ -18,7 +18,7 @@ exports.createAccount = async (req, res) => {
     if (
       !email ||
       !password ||
-      !departmentId ||
+      !departmentName ||
       !role ||
       !firstName ||
       !lastName
@@ -29,12 +29,13 @@ exports.createAccount = async (req, res) => {
       });
     }
 
-    const department = await Department.findById(departmentId);
+    // Find the department by name instead of ID
+    const department = await Department.findOne({ name: departmentName });
 
     if (!department) {
       return res.status(404).json({
         success: false,
-        message: "No department found with this id.",
+        message: "No department found with this name.",
       });
     }
 
@@ -47,7 +48,7 @@ exports.createAccount = async (req, res) => {
       });
     }
 
-    const departmentName = department.name;
+    const departmentId = department._id; // Get the department ID from the found department
 
     const lastEmployee = await Employee.find({ departmentId })
       .sort({ createdAt: -1 })
@@ -75,7 +76,8 @@ exports.createAccount = async (req, res) => {
       lastName,
       email,
       password: hashedPassword,
-      departmentId,
+      departmentName,
+      departmentId: department._id,
       role,
       employeeId,
     });
