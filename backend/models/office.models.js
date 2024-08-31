@@ -57,6 +57,12 @@ const officeSchema = new mongoose.Schema(
         ref: "department",
       },
     ],
+    allOffsideLocations: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "offsideLocations",
+      },
+    ],
   },
   { timestamps: true }
 );

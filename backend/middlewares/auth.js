@@ -37,3 +37,24 @@ exports.auth = async (req, res, next) => {
     });
   }
 };
+
+exports.isAdmin = async (req, res, next) => {
+  try {
+    const { role } = req.user;
+
+    if (role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to access this route",
+      });
+    }
+
+    next();
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: err.message,
+    });
+  }
+};
