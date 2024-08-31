@@ -5,7 +5,7 @@ const employeeSchema = new mongoose.Schema(
   {
     firstName: {
       type: String,
-      required: true,
+      // required: true,
       trim: true,
     },
     middleName: {
@@ -14,7 +14,7 @@ const employeeSchema = new mongoose.Schema(
     },
     lastName: {
       type: String,
-      required: true,
+      // required: true,
       trim: true,
     },
     email: {
@@ -36,13 +36,31 @@ const employeeSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    department: {
+    departmentName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    departmentId: {
       type: mongoose.Schema.Types.ObjectId,
     },
     role: {
       type: String,
       enum: ["employee", "manager", "admin"],
       default: "employee",
+    },
+    token: {
+      type: String,
+    },
+    deviceInfo: {
+      platform: {
+        type: String,
+        required: true,
+      },
+      deviceToken: {
+        type: "String",
+        required: true,
+      },
     },
     allAttendence: [
       {
@@ -53,13 +71,5 @@ const employeeSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
-// Pre-save hook to hash password before saving using hashing
-employeeSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
-});
 
 module.exports = mongoose.model("employee", employeeSchema);

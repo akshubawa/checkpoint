@@ -38,7 +38,9 @@ class _CheckLocationViewState extends State<CheckLocationView> {
     calculateDistance(latitude, longitude, targetLatitude, targetLongitude);
   }
 
-  void calculateDistance(double startLatitude, double startLongitude, double endLatitude, double endLongitude) {
+  void calculateDistance(double startLatitude, double startLongitude, double endLatitude, double endLongitude) async{
+    // String? deviceToken = await FirebaseMessaging.instance.getToken();
+    // debugPrint(deviceToken);
     distanceInMeters = Geolocator.distanceBetween(
       startLatitude,
       startLongitude,
