@@ -12,9 +12,9 @@ const {
   officeEnterRecord,
   officeExitRecord,
   getAllOffices,
-  getAllAttendence,
   createOffsideLocation,
   getCheckinCheckoutStatus,
+  getAllAttendance,
 } = require("../controllers/Office");
 const {
   createAccount,
@@ -39,7 +39,7 @@ router.post("/signup", createAccount);
 router.post("/login", loginAccount);
 router.post("/update-account", auth, updateAccount);
 router.get("/get-account-details", auth, getUserDetails);
-router.get("/get-all-attendence", auth, getAllAttendence);
+router.get("/get-all-attendence", auth, getAllAttendance);
 router.get("/get-is-active", auth, getIsActive);
 router.get("/get-checkin-checkout", auth, getCheckinCheckoutStatus);
 
