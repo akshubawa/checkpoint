@@ -683,19 +683,19 @@ exports.officeEnterRecord = async (req, res) => {
   }
 };
 
-exports.getAllAttendence = async (req, res) => {
+exports.getAllAttendance = async (req, res) => {
   try {
     const userId = req.user.id;
-    let { month, year } = req.body;
+    let { month, year } = req.query; // Use req.query instead of req.body
 
-    console.log("this is the user id:: ", userId);
+    console.log("This is the user ID:", userId);
 
     const user = await Employee.findById(userId);
 
     if (!user) {
       return res.status(403).json({
         success: false,
-        message: "User not found , user id in not valid.",
+        message: "User not found, user ID is not valid.",
       });
     }
 
@@ -731,9 +731,9 @@ exports.getAllAttendence = async (req, res) => {
 
     // Calculate start and end dates for the month
     const startDate = new Date(yearNumber, monthIndex, 1);
-    const endDate = new Date(yearNumber, monthIndex + 1, 1); // start of the next month
+    const endDate = new Date(yearNumber, monthIndex + 1, 1); // Start of the next month
 
-    const attendence = await AttendenceSchema.find({
+    const attendance = await AttendenceSchema.find({
       employee: userId,
       date: {
         $gte: startDate,
@@ -741,22 +741,22 @@ exports.getAllAttendence = async (req, res) => {
       },
     });
 
-    if (attendence.length === 0) {
+    if (attendance.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "No attendance record found for the specified month and year",
+        message: "No attendance record found for the specified month and year.",
       });
     }
 
     return res.status(200).json({
       success: true,
-      message: "Attendance records found",
-      attendence: attendence,
+      message: "Attendance records found.",
+      attendance: attendance,
     });
   } catch (err) {
     return res.status(500).json({
       success: false,
-      message: "Internal server error",
+      message: "Internal server error.",
       error: err.message,
     });
   }
