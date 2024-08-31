@@ -132,11 +132,6 @@ exports.loginAccount = async (req, res) => {
   try {
     const { identifier, password, deviceInfo } = req.body;
 
-    // console.log("identifier",identifier);
-    // console.log("password", password);
-    // console.log("platform", deviceInfo);
-    // cons;
-
     if (!identifier || !password || !deviceInfo) {
       return res.status(400).json({
         success: false,
@@ -144,17 +139,14 @@ exports.loginAccount = async (req, res) => {
       });
     }
 
-    // if (!identifier || !password) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: "Please enter both identifier and password.",
-    //   });
-    // }
-
-    // Find user by either email or employeeId
-    const user = await Employee.findOne({
-      $or: [{ email: identifier }, { employeeId: identifier }],
-    });
+    // Find user by either email or employeeId and update deviceInfo
+    const user = await Employee.findOneAndUpdate(
+      {
+        $or: [{ email: identifier }, { employeeId: identifier }],
+      },
+      { deviceInfo },
+      { new: true } // This ensures the updated document is returned
+    );
 
     if (!user) {
       return res.status(404).json({
@@ -197,7 +189,7 @@ exports.loginAccount = async (req, res) => {
         email: user.email,
         employeeId: user.employeeId,
         role: user.role,
-        deviceInfo: deviceInfo,
+        deviceInfo: user.deviceInfo, // Use the updated deviceInfo from the user object
         departmentId: user.departmentId,
       },
     });

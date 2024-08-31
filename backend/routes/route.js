@@ -11,6 +11,7 @@ const {
   getAllDepartments,
   officeEnterRecord,
   officeExitRecord,
+  getAllOffices,
 } = require("../controllers/Office");
 const {
   createAccount,
@@ -24,6 +25,7 @@ const router = express.Router();
 router.post("/createoffice", createOffice);
 router.put("/updateoffice", updateOffice);
 router.get("/officedetails", getOfficeDetails);
+router.get("/get-all-offices", getAllOffices);
 
 router.post("/signup", createAccount);
 router.post("/login", loginAccount);
