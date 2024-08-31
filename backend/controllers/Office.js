@@ -743,7 +743,7 @@ exports.getAllAttendance = async (req, res) => {
 
     if (attendance.length === 0) {
       return res.status(404).json({
-        success: false,
+        success: true,
         message: "No attendance record found for the specified month and year.",
       });
     }

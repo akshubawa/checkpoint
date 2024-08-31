@@ -1,8 +1,8 @@
 "use client";
 import { basePath } from "@/components/route";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
-const page = () => {
+const Page = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -17,21 +17,38 @@ const page = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({
+          identifier: email,
+          password,
+          deviceInfo: {
+            platform: "android",
+            deviceToken: "thisisdevicetoken",
+          },
+        }),
       });
 
       const data = await response.json();
 
       if (data.success) {
         localStorage.setItem("adminToken", data.token);
-        window.location.href = "/admin/dashboard";
+        window.location.href = "/";
       } else {
-        setError("Invalid credentials");
+        setError(data.message);
       }
     } catch (error) {
       setError("An error occurred. Please try again.");
     }
   };
+
+  useEffect(() => {
+    const getToken = async () => {
+      const token = localStorage.getItem("adminToken");
+      if (token) {
+        window.location.href = "/";
+      }
+    };
+    getToken();
+  }, []);
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -136,4 +153,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;
