@@ -1,7 +1,10 @@
+import 'package:checkpoint/views/auth/login_view.dart';
 import 'package:checkpoint/widgets/circular_icons.dart';
 import 'package:checkpoint/widgets/side_menu_tile.dart';
+import 'package:checkpoint/widgets/snackbar/custom_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Profile extends StatefulWidget {
 
@@ -25,6 +28,19 @@ class _ProfileState extends State<Profile> {
     debugPrint("Error getting package info: $e");
   }
 }
+
+void logout(BuildContext context) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('token');
+    CustomSnackbar.show(context, "Logged out successfully", "green");
+    
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginPage()),
+      (route) => false,
+    );
+  }
+
 
 
   @override
@@ -100,7 +116,7 @@ class _ProfileState extends State<Profile> {
                 SideMenuTile(
                     title: "Notifications",
                     icon: Icons.notifications_active,
-                    onTap: () {
+                    onTap: (){
                      
                     },
                   ),
@@ -122,7 +138,7 @@ class _ProfileState extends State<Profile> {
                     title: "Logout",
                     icon: Icons.logout,
                     onTap: () {
-                     
+                     logout(context);
                     },
                   ),
                  

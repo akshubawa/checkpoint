@@ -23,13 +23,13 @@ class _MenuState extends State<Menu> {
   Map<IconData, String> listOfIcons = {
     UIconsPro.regularRounded.home: "Home",
     UIconsPro.regularRounded.clipboard_list_check: "Attendence",
-    UIconsPro.regularRounded.users: "My Team",
+    UIconsPro.regularRounded.users: "My Leaves",
     UIconsPro.regularRounded.user: "Profile",
   };
   Map<IconData, String> listOfIcons2 = {
     UIconsPro.solidRounded.home: "Home",
     UIconsPro.solidRounded.clipboard_list_check: "Attendence",
-    UIconsPro.solidRounded.users: "My Team",
+    UIconsPro.solidRounded.users: "My Leaves",
     UIconsPro.solidRounded.user: "Profile",
   };
 

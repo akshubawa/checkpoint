@@ -2,7 +2,7 @@ import 'package:checkpoint/screen/ui/widgets/bottom_navigation.dart';
 import 'package:checkpoint/views/attendence.dart';
 import 'package:checkpoint/views/homepage.dart';
 import 'package:checkpoint/views/profile.dart';
-import 'package:checkpoint/views/myteam.dart';
+import 'package:checkpoint/views/my_leaves.dart';
 import 'package:flutter/material.dart';
 
 class Screen extends StatefulWidget {
