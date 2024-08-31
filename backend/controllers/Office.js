@@ -2,6 +2,8 @@ const Employee = require("../models/employee.models");
 const Office = require("../models/office.models");
 const Department = require("../models/department.models");
 const AttendenceSchema = require("../models/attendence.models");
+const OffsiteWork = require("../models/offsite.work.model");
+const OffSideWorkSchema = require("../models/offsideLocations.models");
 
 exports.createOffice = async (req, res) => {
   try {
@@ -163,6 +165,73 @@ exports.getAllOffices = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Error occured while getting the details for the office.",
+      error: err.message,
+    });
+  }
+};
+
+exports.createOffsideLocation = async (req, res) => {
+  try {
+    const { officeName, name, coordinates } = req.body;
+
+    if (
+      !officeName ||
+      !name ||
+      !coordinates.latitude ||
+      !coordinates.longitude
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter all the fields.",
+      });
+    }
+
+    const office = await Office.findOne({ name: officeName });
+
+    if (!office) {
+      return res.status(500).json({
+        success: false,
+        message: "No office found with this name.",
+      });
+    }
+
+    const offsiteLocation = await OffSideWorkSchema.findOne({
+      name,
+    });
+
+    if (offsiteLocation) {
+      return res.status(400).json({
+        success: false,
+        message: "Offsite location already exists.",
+      });
+    }
+
+    const newOffSiteLocation = new OffSideWorkSchema({
+      officeId: office._id,
+      officeName: officeName,
+      name,
+      coordinates: {
+        latitude: coordinates.latitude,
+        longitude: coordinates.longitude,
+      },
+    });
+
+    await newOffSiteLocation.save();
+
+    office.allOffsideLocations.push(newOffSiteLocation._id);
+
+    await office.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Offsite location created successfully.",
+      offsiteLocation: newOffSiteLocation,
+      office: office.allOffsideLocations,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Error occured while creating the offsite location",
       error: err.message,
     });
   }
@@ -680,6 +749,38 @@ exports.getAllAttendence = async (req, res) => {
       success: true,
       message: "Attendance records found",
       attendence: attendence,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: err.message,
+    });
+  }
+};
+
+exports.offSiteWorkRequest = async (req, res) => {
+  try {
+    const { id } = req.user;
+
+    const user = await Employee.findById(id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const { type, reason } = req.body;
+
+    const date = new Date();
+
+    const newOffSiteWork = new OffsiteWork({
+      employee: id,
+      date,
+      type,
+      reason,
     });
   } catch (err) {
     return res.status(500).json({

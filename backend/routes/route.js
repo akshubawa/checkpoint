@@ -13,6 +13,7 @@ const {
   officeExitRecord,
   getAllOffices,
   getAllAttendence,
+  createOffsideLocation,
 } = require("../controllers/Office");
 const {
   createAccount,
@@ -29,6 +30,8 @@ router.post("/createoffice", createOffice);
 router.put("/updateoffice", updateOffice);
 router.get("/officedetails", getOfficeDetails);
 router.get("/get-all-offices", getAllOffices);
+
+router.post("/create-offsite-location", createOffsideLocation);
 
 router.post("/signup", createAccount);
 router.post("/login", loginAccount);
