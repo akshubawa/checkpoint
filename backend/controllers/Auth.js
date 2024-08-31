@@ -16,18 +16,54 @@ exports.createAccount = async (req, res) => {
       deviceInfo,
     } = req.body;
 
-    if (
-      !email ||
-      !password ||
-      !departmentName ||
-      !role ||
-      !firstName ||
-      !lastName ||
-      !deviceInfo
-    ) {
+    //This approach ensures that the user knows exactly which field is missing and can correct it immediately.
+
+    if (!email) {
       return res.status(400).json({
         success: false,
-        message: "Please enter all the fields.",
+        message: "Email is required.",
+      });
+    }
+
+    if (!password) {
+      return res.status(400).json({
+        success: false,
+        message: "Password is required.",
+      });
+    }
+
+    if (!departmentName) {
+      return res.status(400).json({
+        success: false,
+        message: "Department name is required.",
+      });
+    }
+
+    if (!role) {
+      return res.status(400).json({
+        success: false,
+        message: "Role is required.",
+      });
+    }
+
+    if (!firstName) {
+      return res.status(400).json({
+        success: false,
+        message: "First name is required.",
+      });
+    }
+
+    if (!lastName) {
+      return res.status(400).json({
+        success: false,
+        message: "Last name is required.",
+      });
+    }
+
+    if (!deviceInfo) {
+      return res.status(400).json({
+        success: false,
+        message: "Device information is required.",
       });
     }
 
