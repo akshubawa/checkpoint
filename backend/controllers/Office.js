@@ -966,7 +966,7 @@ exports.getCheckinCheckoutStatus = async (req, res) => {
     // If no attendance record found for today
     if (attendances.length === 0) {
       return res.status(404).json({
-        success: false,
+        success: true,
         message: "No attendance record found for today.",
       });
     }
@@ -979,6 +979,7 @@ exports.getCheckinCheckoutStatus = async (req, res) => {
       message: "Check-in and check-out status retrieved successfully.",
       checkInTime: lastAttendance.checkInTime,
       checkOutTime: lastAttendance.checkOutTime,
+      totalWorkingHours: lastAttendance.totalWorkingHours,
     });
   } catch (err) {
     return res.status(500).json({
