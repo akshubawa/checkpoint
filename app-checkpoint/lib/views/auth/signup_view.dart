@@ -92,8 +92,8 @@ class _SignUpState extends State<SignUp> {
     "password": passwordController.text.trim().toString(),
     // "role": departmentController.text.trim().toString(),
     "role": roleController.text.trim().toString().toLowerCase() ,
-    // "departmentName": departmentController.text.trim().toLowerCase(),
-    "departmentName": "finance department",
+    "departmentName": departmentController.text.trim(),
+    // "departmentName": "finance department",
     "deviceInfo" : {
       "platform": platform,
       "deviceToken": deviceToken
