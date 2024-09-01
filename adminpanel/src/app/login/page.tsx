@@ -6,7 +6,7 @@ const Page = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-
+  // @ts-ignore
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");

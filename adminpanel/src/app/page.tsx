@@ -13,9 +13,9 @@ const Page = () => {
     };
     getToken();
 
-    const getid = async () => {
-      console.log(id);
-    };
+    // const getid = async () => {
+    //   console.log(id);
+    // };
   }, []);
 
   return (

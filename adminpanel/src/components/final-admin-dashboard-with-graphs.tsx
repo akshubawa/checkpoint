@@ -183,7 +183,6 @@ const AdminDashboard = () => {
   };
 
   const fetchAttendanceData = () => {
-    // Simulating API call
     setAttendanceData([
       { date: "2023-05-01", present: 50, absent: 10, offsite: 5 },
       { date: "2023-05-02", present: 45, absent: 12, offsite: 7 },
