@@ -57,7 +57,6 @@ dependencies:
   flutter_spinkit: ^5.2.1
   jwt_decoder: ^2.0.1
 
-
   http: any
   simple_ripple_animation: ^0.0.9
   geocoding: ^3.0.0
