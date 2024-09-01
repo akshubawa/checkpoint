@@ -31,7 +31,8 @@ const attendenceSchema = new mongoose.Schema({
       flag: Boolean,
       exitTime: Date,
       returnTime: Date,
-      reason: ["non official work", "site visit", "project work"],
+      reason: "string",
+      isApprovedByAdmin: Boolean,
     },
   ],
   totalWorkingHours: {

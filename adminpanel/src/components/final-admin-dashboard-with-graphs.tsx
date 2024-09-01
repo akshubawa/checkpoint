@@ -14,6 +14,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
+import { basePath } from "./route";
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState({
@@ -31,6 +32,26 @@ const AdminDashboard = () => {
   const [monthlyAttendance, setMonthlyAttendance] = useState([]);
   const [departmentAttendance, setDepartmentAttendance] = useState([]);
   const [offSiteReasons, setOffSiteReasons] = useState([]);
+  const [requests, setRequests] = useState([
+    {
+      _id: "1",
+      employee: { firstName: "John", lastName: "Doe", employeeId: "EMP001" },
+      date: "2023-05-06",
+      type: "Work From Home",
+      reason: "Family emergency",
+    },
+    {
+      _id: "2",
+      employee: {
+        firstName: "Jane",
+        lastName: "Smith",
+        employeeId: "EMP002",
+      },
+      date: "2023-05-07",
+      type: "Offsite Meeting",
+      reason: "Client meeting",
+    },
+  ]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -41,11 +62,103 @@ const AdminDashboard = () => {
     fetchOffSiteReasons();
   }, []);
 
+  useEffect(() => {
+    const getAllEmployees = async () => {
+      const res = await fetch(`${basePath}/admin-get-total-employees`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
+      });
+
+      const data = await res.json();
+
+      // console.log(data);
+
+      if (res.status === 200) {
+        setStats((prevStats) => ({
+          ...prevStats,
+          totalEmployees: data.data.length,
+        }));
+      }
+    };
+
+    const getAllPresentToday = async () => {
+      const res = await fetch(`${basePath}/admin-get-present-today`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
+      });
+
+      const data = await res.json();
+
+      console.log(data);
+
+      if (res.status === 200) {
+        setStats((prevStats) => ({
+          ...prevStats,
+          presentToday: data.presentEmployees.length,
+        }));
+      }
+    };
+
+    const getAllOffices = async () => {
+      const res = await fetch(`${basePath}/get-all-offices`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
+      });
+
+      const data = await res.json();
+
+      // console.log(data);
+
+      if (res.status === 200) {
+        setStats((prevStats) => ({
+          ...prevStats,
+          totalOffices: data.offices.length,
+        }));
+      }
+    };
+
+    const getAllHalfDaysRequest = async () => {
+      const res = await fetch(`${basePath}/admin-get-all-half-day-leave`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
+      });
+
+      const data = await res.json();
+
+      // console.log(data);
+
+      if (res.status === 200) {
+        setStats((prevStats) => ({
+          ...prevStats,
+          pendingOffSiteRequests: data.leaveRequests.length,
+        }));
+        // setData(data.leaveRequests);
+      }
+    };
+
+    getAllEmployees();
+    getAllPresentToday();
+    getAllOffices();
+    getAllHalfDaysRequest();
+  }, []);
+
   const fetchDashboardData = async () => {
     // Simulating API call
     setStats({
       totalEmployees: 150,
-      presentToday: 132,
+      presentToday: 14,
       totalOffices: 5,
       pendingOffSiteRequests: 8,
       avgCheckInTime: "09:15 AM",
@@ -120,15 +233,17 @@ const AdminDashboard = () => {
       { reason: "Training", value: 10 },
     ]);
   };
-
-  const handleApproveRequest = async (id) => {
-    console.log("Approved request:", id);
-    // Implement approve logic here
+  const handleApprove = (id) => {
+    setRequests((prevRequests) =>
+      prevRequests.filter((request) => request._id !== id)
+    );
   };
 
-  const handleRejectRequest = async (id) => {
-    console.log("Rejected request:", id);
-    // Implement reject logic here
+  // Handle request rejection
+  const handleReject = (id) => {
+    setRequests((prevRequests) =>
+      prevRequests.filter((request) => request._id !== id)
+    );
   };
 
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
@@ -399,7 +514,7 @@ const AdminDashboard = () => {
                 </div>
                 <div className="border-t border-gray-200">
                   <dl>
-                    {offSiteRequests.map((request) => (
+                    {requests.map((request) => (
                       <div
                         key={request._id}
                         className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
@@ -433,13 +548,13 @@ const AdminDashboard = () => {
                         <div className="mt-4 sm:mt-0 sm:col-span-3 flex space-x-4">
                           <button
                             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                            onClick={() => handleApproveRequest(request._id)}
+                            onClick={() => handleApprove(request._id)}
                           >
                             Approve
                           </button>
                           <button
                             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                            onClick={() => handleRejectRequest(request._id)}
+                            onClick={() => handleReject(request._id)}
                           >
                             Reject
                           </button>

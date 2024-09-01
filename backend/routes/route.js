@@ -15,6 +15,8 @@ const {
   createOffsideLocation,
   getCheckinCheckoutStatus,
   getAllAttendance,
+  applyHalfDayLeave,
+  approveLeaveRequest,
 } = require("../controllers/Office");
 const {
   createAccount,
@@ -24,6 +26,12 @@ const {
   getIsActive,
 } = require("../controllers/Auth");
 const { auth } = require("../middlewares/auth");
+const {
+  getTotalEmployees,
+  getPresentToday,
+  adminGetAllOffices,
+  getAllHalfDayLeaveRequests,
+} = require("../controllers/adminController");
 const router = express.Router();
 
 // hello world
@@ -52,5 +60,14 @@ router.post("/checkin", auth, checkIn);
 router.post("/checkout", auth, checkOut);
 router.post("/office-exit-record", auth, officeExitRecord);
 router.post("/office-enter-record", auth, officeEnterRecord);
+
+router.post("/apply-leave", auth, applyHalfDayLeave);
+router.post("/approve-by-admin", auth, approveLeaveRequest);
+
+// adminpanel
+router.get("/admin-get-total-employees", auth, getTotalEmployees);
+router.get("/admin-get-present-today", auth, getPresentToday);
+router.get("/admin-get-all-offices", auth, adminGetAllOffices);
+router.get("/admin-get-all-half-day-leave", auth, getAllHalfDayLeaveRequests);
 
 module.exports = router;
