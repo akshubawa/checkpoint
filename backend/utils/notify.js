@@ -1,53 +1,42 @@
-const admin = require("firebase-admin");
-const serviceAccount = require("../app-checkpoint-firebase-adminsdk-migey-748c10ff69.json");
+const axios = require("axios");
+const getAccessToken = require("./getAccessToken"); // Update this path
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
-
-const sendNotification = async (registrationToken, title, body) => {
-  // // Find the employee by ID and get the deviceToken
-  // const employee = await Employee.findById(employeeId);
-
-  // if (!employee || !employee.deviceToken) {
-  //   throw new Error("Employee not found or device token is missing.");
-  // }
-
-  // const registrationToken = employee.deviceInfo.deviceToken;
-
-  const messageSend = {
-    token: registrationToken,
-    notification: {
-      title: title,
-      body: body,
+async function sendNotification(
+  deviceToken,
+  title,
+  body,
+  image = null,
+  payload = {}
+) {
+  const apiPayload = {
+    message: {
+      token: deviceToken,
+      notification: {
+        title: title,
+        body: body,
+        image: image,
+      },
+      data: payload,
     },
-    // data: {
-    //   key1: "value1",
-    //   key2: "value2",
-    // },
-    // android: {
-    //   priority: "high",
-    // },
-    // apns: {
-    //   payload: {
-    //     aps: {
-    //       badge: 42,
-    //     },
-    //   },
-    // },
   };
 
-  admin
-    .messaging()
-    .send(messageSend)
-    .then((response) => {
-      console.log("Successfully sent message:", response);
-    })
-    .catch((error) => {
-      console.log("Error in sending message:", error);
-    });
-};
+  try {
+    const accessToken = await getAccessToken();
+    await axios.post(
+      "https://fcm.googleapis.com/v1/projects/app-checkpoint/messages:send",
+      apiPayload,
+      {
+        // Replace `your-project-id`
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    console.log("Notification sent successfully");
+  } catch (e) {
+    console.error("App notification failed:", e.message);
+  }
+}
 
-module.exports = {
-  sendNotification,
-};
+module.exports = sendNotification;
