@@ -3,11 +3,13 @@ import 'dart:convert';
 import 'package:checkpoint/api/api_service.dart';
 import 'package:checkpoint/screen/ui/screen.dart';
 import 'package:checkpoint/views/auth/login_view.dart';
-import 'package:checkpoint/widgets/background.dart';
+import 'package:checkpoint/widgets/background/background.dart';
 import 'package:checkpoint/widgets/buttons/text_buttons.dart';
 import 'package:checkpoint/widgets/snackbar/custom_snackbar.dart';
 import 'package:checkpoint/widgets/textfields/custom_texfield.dart';
 import 'package:dropdown_search/dropdown_search.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -36,20 +38,41 @@ class _SignUpState extends State<SignUp> {
   TextEditingController lastNameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
-  TextEditingController empIdController = TextEditingController();
+  // TextEditingController empIdController = TextEditingController();
+  TextEditingController roleController = TextEditingController();
   TextEditingController departmentController = TextEditingController();
+
+  late String platform = "";
+  late String deviceToken = "";
 
   late SharedPreferences prefs;
 
   @override
   void initState() {
     initSharedPref();
+    getDeviceToken();
     super.initState();
   }
 
   void initSharedPref() async {
     prefs = await SharedPreferences.getInstance();
   }
+
+  Future<void> getDeviceToken() async {
+    String? token = await FirebaseMessaging.instance.getToken();
+    String deviceType = defaultTargetPlatform == TargetPlatform.android
+        ? "android"
+        : defaultTargetPlatform == TargetPlatform.iOS
+            ? "ios"
+            : "unknown";
+
+    setState(() {
+      platform = deviceType;
+      deviceToken = token ?? "";
+    });
+
+    }
+
 
   final ApiService apiService = ApiService();
 
@@ -68,8 +91,13 @@ class _SignUpState extends State<SignUp> {
     "lastName": lastNameController.text.trim().toString(),
     "password": passwordController.text.trim().toString(),
     // "role": departmentController.text.trim().toString(),
-    "role": departmentController.text.trim().toString().toLowerCase() ,
-    "departmentId": "66d2084d794bf94b97b7f06f"
+    "role": roleController.text.trim().toString().toLowerCase() ,
+    // "departmentName": departmentController.text.trim().toLowerCase(),
+    "departmentName": "finance department",
+    "deviceInfo" : {
+      "platform": platform,
+      "deviceToken": deviceToken
+    }
 };
     try {
       var response = await apiService.post('signup', headers: headers, body: body, jsonEncodeBody: true);
@@ -235,7 +263,7 @@ class _SignUpState extends State<SignUp> {
                             ),
                           ],
                         ),
-                        SizedBox(height: screenHeight * .03),
+                        SizedBox(height: screenHeight * .02),
                         Text(
                           'Email',
                           style: GoogleFonts.redHatDisplay(
@@ -260,20 +288,66 @@ class _SignUpState extends State<SignUp> {
                               }
                             },
                             keyboardType: TextInputType.emailAddress),
-                        SizedBox(height: screenHeight * .03),
+                        SizedBox(height: screenHeight * .02),
+                        // Text(
+                        //   'Employee ID',
+                        //   style: GoogleFonts.redHatDisplay(
+                        //       color: Colors.grey[600],
+                        //       fontWeight: FontWeight.w500,
+                        //       fontSize: 15),
+                        // ),
+                        // CustomTextfield(
+                        //     hint: "Enter Employee Id",
+                        //     controller: empIdController,
+                        //     keyboardType: TextInputType.text,
+                        //     obscureText: false),
+                        // SizedBox(height: screenHeight * .02),
                         Text(
-                          'Employee ID',
+                          'Role',
                           style: GoogleFonts.redHatDisplay(
                               color: Colors.grey[600],
                               fontWeight: FontWeight.w500,
                               fontSize: 15),
                         ),
-                        CustomTextfield(
-                            hint: "Enter Employee Id",
-                            controller: empIdController,
-                            keyboardType: TextInputType.text,
-                            obscureText: false),
-                        SizedBox(height: screenHeight * .03),
+                        DropdownSearch<String>(
+                          items: const [
+                            // "GAIL Bhawan, New Delhi",
+                            // "GAIL (India) Limited, Mumbai Office",
+                            // "GAIL (India) Limited, Kolkata Office",
+                            // "GAIL (India) Limited, Chennai Office",
+                            // "GAIL (India) Limited, Hyderabad Office",
+                            // "GAIL (India) Limited, Bengaluru Office",
+                            // "GAIL (India) Limited, Vadodara Office",
+                            "Employee",
+                            "Admin",
+                            "Manager",
+                          ],
+                          dropdownDecoratorProps: const DropDownDecoratorProps(
+                            dropdownSearchDecoration: InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                          onChanged: (String? selectedItem) {
+                            roleController.text = selectedItem ?? "";
+                          },
+                          popupProps: const PopupProps.menu(
+                            showSearchBox: true,
+                            searchFieldProps: TextFieldProps(
+                              decoration: InputDecoration(
+                                labelText: 'Search',
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                          ),
+                          dropdownBuilder: (context, selectedItem) {
+                            return Text(
+                              selectedItem ?? "",
+                              style: const TextStyle(fontSize: 16),
+                            );
+                          },
+                        ),
+                        SizedBox(height: screenHeight * .02),
                         Text(
                           'Department',
                           style: GoogleFonts.redHatDisplay(
@@ -283,9 +357,16 @@ class _SignUpState extends State<SignUp> {
                         ),
                         DropdownSearch<String>(
                           items: const [
-                            "Employee",
-                            "Administrator",
-                            "Manager",
+                            'Human Resources',
+                            'Finance',
+                            'Marketing',
+                            'Sales',
+                            'IT',
+                            'Legal',
+                            'Customer Service',
+                            'Research and Development',
+                            'Operations',
+                            'Administration'
                           ],
                           dropdownDecoratorProps: const DropDownDecoratorProps(
                             dropdownSearchDecoration: InputDecoration(
@@ -313,7 +394,7 @@ class _SignUpState extends State<SignUp> {
                           },
                         ),
 
-                        SizedBox(height: screenHeight * .03),
+                        SizedBox(height: screenHeight * .02),
                         Text(
                           'Password',
                           style: GoogleFonts.redHatDisplay(

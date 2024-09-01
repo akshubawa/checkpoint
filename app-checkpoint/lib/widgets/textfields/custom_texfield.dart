@@ -9,10 +9,12 @@ class CustomTextfield extends StatelessWidget {
   final TextEditingController controller;
   final TextInputType? keyboardType;
   final bool obscureText;
+  final int? lines;
   final void Function(String)? onChange;
 
   const CustomTextfield({
     super.key,
+    this.lines,
     required this.hint,
     required this.controller,
     this.prefix,
@@ -37,6 +39,7 @@ class CustomTextfield extends StatelessWidget {
         ],
       ),
       child: TextField(
+        maxLines: lines ?? 1,
         obscureText: obscureText,
         controller: controller,
         keyboardType: keyboardType,

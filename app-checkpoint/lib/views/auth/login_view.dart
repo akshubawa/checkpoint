@@ -5,9 +5,11 @@ import 'dart:convert';
 import 'package:checkpoint/api/api_service.dart';
 import 'package:checkpoint/screen/ui/screen.dart';
 import 'package:checkpoint/views/auth/signup_view.dart';
-import 'package:checkpoint/widgets/background.dart';
+import 'package:checkpoint/widgets/background/background.dart';
 import 'package:checkpoint/widgets/buttons/text_buttons.dart';
 import 'package:checkpoint/widgets/snackbar/custom_snackbar.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -31,6 +33,24 @@ class _LoginPageState extends State<LoginPage> {
 
   bool isshown = true;
 
+  late String platform = "";
+  late String deviceToken = "";
+
+  Future<void> getDeviceToken() async {
+    String? token = await FirebaseMessaging.instance.getToken();
+    String deviceType = defaultTargetPlatform == TargetPlatform.android
+        ? "android"
+        : defaultTargetPlatform == TargetPlatform.iOS
+            ? "ios"
+            : "unknown";
+
+    setState(() {
+      platform = deviceType;
+      deviceToken = token ?? "";
+    });
+
+    }
+
   Future<void> loginAccount() async{
     setState(() {
       isSigningIn = true;
@@ -42,7 +62,11 @@ class _LoginPageState extends State<LoginPage> {
 
     Map body = {
       "identifier" : email.text.trim().toString(),
-      "password" : password.text.trim().toString()
+      "password" : password.text.trim().toString(),
+      "deviceInfo" : {
+      "platform": platform,
+      "deviceToken": deviceToken
+    }
     };
     try {
       var response = await apiService.post('login', headers: headers, body: body, jsonEncodeBody: true);
@@ -73,6 +97,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     initSharedPref();
+    getDeviceToken();
     super.initState();
   }
 
