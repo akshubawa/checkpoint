@@ -59,6 +59,9 @@ dependencies:
 
 
   http: any
+  simple_ripple_animation: ^0.0.9
+  geocoding: ^3.0.0
+  dropdown_button2: ^2.3.9
 dev_dependencies:
   flutter_test:
     sdk: flutter

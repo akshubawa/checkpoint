@@ -1,13 +1,16 @@
 import 'package:checkpoint/screen/ui/widgets/bottom_navigation.dart';
-import 'package:checkpoint/views/attendence.dart';
-import 'package:checkpoint/views/homepage.dart';
-import 'package:checkpoint/views/profile.dart';
-import 'package:checkpoint/views/my_leaves.dart';
+import 'package:checkpoint/widgets/cards/attendence.dart';
+import 'package:checkpoint/views/nav_pages/homepage.dart';
+import 'package:checkpoint/views/nav_pages/profile.dart';
+import 'package:checkpoint/views/nav_pages/my_leaves.dart';
 import 'package:flutter/material.dart';
 
 class Screen extends StatefulWidget {
+  final int initialPage;
+
   const Screen({
     super.key,
+    this.initialPage = 0, // Default to the first page if no page is specified
   });
 
   @override
@@ -21,7 +24,8 @@ class _ScreenState extends State<Screen> {
   @override
   void initState() {
     super.initState();
-    pageController = PageController();
+    pageController = PageController(initialPage: widget.initialPage); // Set the initial page
+    _currentPageNotifier.value = widget.initialPage; // Set the initial value for the notifier
   }
 
   @override
@@ -41,7 +45,7 @@ class _ScreenState extends State<Screen> {
         onPageChanged: (index) {
           _currentPageNotifier.value = index;
         },
-        children: const [HomePage(), Attendence(), Myteam(), Profile()],
+        children: const [HomePage(), Attendence(), MyLeaves(), Profile()],
       ),
       bottomNavigationBar: ValueListenableBuilder<int>(
         valueListenable: _currentPageNotifier,

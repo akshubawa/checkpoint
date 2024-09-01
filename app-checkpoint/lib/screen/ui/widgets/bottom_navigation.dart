@@ -38,7 +38,7 @@ class _MenuState extends State<Menu> {
     Size size = MediaQuery.of(context).size;
     return GlassContainer(
       width: widget.screenWidth,
-      height: 66,
+      height: 80,
       blur: 4,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
