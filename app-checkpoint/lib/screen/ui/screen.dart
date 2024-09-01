@@ -1,5 +1,5 @@
 import 'package:checkpoint/screen/ui/widgets/bottom_navigation.dart';
-import 'package:checkpoint/widgets/cards/attendence.dart';
+import 'package:checkpoint/views/nav_pages/attendence.dart';
 import 'package:checkpoint/views/nav_pages/homepage.dart';
 import 'package:checkpoint/views/nav_pages/profile.dart';
 import 'package:checkpoint/views/nav_pages/my_leaves.dart';
@@ -54,9 +54,13 @@ class _ScreenState extends State<Screen> {
             screenWidth: screenWidth,
             currentIndex: currentIndex,
             onIconPressed: (index) {
-              pageController.animateToPage(index,
-                  duration: const Duration(milliseconds: 500),
-                  curve: Curves.easeInOut);
+              if (currentIndex + 1 != index && currentIndex - 1 != index) {
+                pageController.jumpToPage(index);
+              } else if (currentIndex + 1 == index ||
+                  currentIndex - 1 == index) {
+                pageController.animateToPage(index,
+                    duration: Durations.medium4, curve: Curves.easeInOut);
+              }
               _currentPageNotifier.value = index;
             },
           );

@@ -19,10 +19,14 @@ class AttendanceCard extends StatelessWidget {
 
     // Format the check-in and check-out times
     String clockIn = DateFormat('hh:mm a').format(DateTime.parse(record["checkInTime"]));
-    String clockOut = DateFormat('hh:mm a').format(DateTime.parse(record["checkOutTime"]));
+    String clockOut = record["checkOutTime"] != null
+    ? DateFormat('hh:mm a').format(DateTime.parse(record["checkOutTime"]))
+    : "N/A";
+
 
     // Calculate the total working hours
-    double totalWorkingHours = record["totalWorkingHours"];
+    double totalWorkingHours = record["totalWorkingHours"] ?? 0.0;
+
     String hours = "${totalWorkingHours.toStringAsFixed(2)} hrs";
 
     return Column(
