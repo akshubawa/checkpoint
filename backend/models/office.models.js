@@ -49,7 +49,7 @@ const officeSchema = new mongoose.Schema(
     },
     isActive: {
       type: Boolean,
-      default: true,
+      default: false,
     },
     allDepartments: [
       {

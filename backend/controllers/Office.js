@@ -5,6 +5,7 @@ const AttendenceSchema = require("../models/attendence.models");
 const OffsiteWork = require("../models/offsite.work.model");
 const OffSideWorkSchema = require("../models/offsideLocations.models");
 const LeaveRequest = require("../models/leaveRequest.models");
+const { sendNotification } = require("../utils/notify");
 
 exports.createOffice = async (req, res) => {
   try {
@@ -454,6 +455,14 @@ exports.checkIn = async (req, res) => {
     user.isActive = true;
     user.allAttendence.push(newAttendence._id);
     await user.save();
+
+    const registrationToken = user.deviceInfo.deviceToken;
+
+    await sendNotification(
+      registrationToken,
+      "Check-in",
+      "You have successfully checked in."
+    );
 
     return res.status(200).json({
       success: true,
