@@ -846,7 +846,7 @@ exports.officeEnterRecord = async (req, res) => {
 exports.getAllAttendance = async (req, res) => {
   try {
     const userId = req.user.id;
-    let { month, year } = req.query; // Use req.query instead of req.body
+    let { month, year } = req.query;
 
     console.log("This is the user ID:", userId);
 
@@ -859,7 +859,6 @@ exports.getAllAttendance = async (req, res) => {
       });
     }
 
-    // Map month names to month indices
     const monthNames = {
       january: 0,
       february: 1,
@@ -875,13 +874,10 @@ exports.getAllAttendance = async (req, res) => {
       december: 11,
     };
 
-    // Convert month to lowercase for case-insensitivity
     month = month.toLowerCase();
-
     const monthIndex = monthNames[month];
     const yearNumber = parseInt(year, 10);
 
-    // Validate month and year
     if (monthIndex === undefined || isNaN(yearNumber)) {
       return res.status(400).json({
         success: false,
@@ -889,9 +885,8 @@ exports.getAllAttendance = async (req, res) => {
       });
     }
 
-    // Calculate start and end dates for the month
     const startDate = new Date(yearNumber, monthIndex, 1);
-    const endDate = new Date(yearNumber, monthIndex + 1, 1); // Start of the next month
+    const endDate = new Date(yearNumber, monthIndex + 1, 1);
 
     const attendance = await AttendenceSchema.find({
       employee: userId,
@@ -908,10 +903,25 @@ exports.getAllAttendance = async (req, res) => {
       });
     }
 
+    // Filter to get the most recent record per day
+    const recentAttendance = attendance.reduce((acc, record) => {
+      const recordDate = new Date(record.date).toDateString();
+      if (
+        !acc[recordDate] ||
+        new Date(record.date) > new Date(acc[recordDate].date)
+      ) {
+        acc[recordDate] = record;
+      }
+      return acc;
+    }, {});
+
+    // Convert the object to an array
+    const filteredAttendance = Object.values(recentAttendance);
+
     return res.status(200).json({
       success: true,
       message: "Attendance records found.",
-      attendance: attendance,
+      attendance: filteredAttendance,
     });
   } catch (err) {
     return res.status(500).json({
