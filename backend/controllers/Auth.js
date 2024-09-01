@@ -227,6 +227,7 @@ exports.loginAccount = async (req, res) => {
         role: user.role,
         deviceInfo: user.deviceInfo, // Use the updated deviceInfo from the user object
         departmentId: user.departmentId,
+        // isActive: user.isActive,
       },
     });
   } catch (err) {
