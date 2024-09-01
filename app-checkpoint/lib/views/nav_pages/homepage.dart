@@ -16,6 +16,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:simple_ripple_animation/simple_ripple_animation.dart';
 import 'package:uicons_pro/uicons_pro.dart';
@@ -39,6 +40,7 @@ class _HomePageState extends State<HomePage>
   String _timeString = "";
   String _dateString = "";
   Timer? _timer;
+  bool isActive = false;
 
   File? selectedImage;
 
@@ -59,6 +61,9 @@ class _HomePageState extends State<HomePage>
   DateTime? checkOutTime;
   late String? workingHour = "--:--";
   bool isLoading = true;
+  late Map jwtDecodedToken = {};
+  late String employee_id = "";
+  late bool isVerified = false;
 
   void getLocation() async {
     await Geolocator.checkPermission();
@@ -117,12 +122,14 @@ class _HomePageState extends State<HomePage>
   void getTokenFromPrefs() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String? storedToken = prefs.getString('token');
+    
     if (storedToken != null) {
       setState(() {
         token = storedToken;
-        // jwtDecodedToken = JwtDecoder.decode(token);
+        jwtDecodedToken = JwtDecoder.decode(token);
       });
-      print(token);
+      // print(token);
+      print(jwtDecodedToken);
     }
     getActiveStatus();
     getCheckInCheckOutData();
@@ -202,9 +209,16 @@ class _HomePageState extends State<HomePage>
         checkOutTime = jsonResponse.containsKey('checkOutTime') && jsonResponse['checkOutTime'] != null
             ? DateTime.parse(jsonResponse['checkOutTime'])
             : null;
-        workingHour = jsonResponse.containsKey('workingHour') && jsonResponse['workingHour'] != null
-            ? jsonResponse['workingHour'].toString()
-            : null;
+       if (jsonResponse.containsKey('totalWorkingHours') && jsonResponse['totalWorkingHours'] != null) {
+          double hours = double.parse(jsonResponse['totalWorkingHours'].toString());
+          int totalMinutes = (hours * 60).toInt();
+          int hoursPart = totalMinutes ~/ 60;
+          int minutesPart = totalMinutes % 60;
+
+          workingHour = '${hoursPart.toString().padLeft(2, '0')}:${minutesPart.toString().padLeft(2, '0')}';
+        } else {
+          workingHour = null;
+        }
       });
     } else if (jsonResponse['success'] == false) {
       setState(() {
@@ -225,6 +239,75 @@ class _HomePageState extends State<HomePage>
   }
 }
 
+Future<void> getProfileData() async {
+    try {
+      final headers = <String, String>{
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      };
+
+      final response = await apiService.get(
+        'get-account-details',
+        headers: headers,
+      );
+      Map jsonResponse = jsonDecode(response.body);
+      print(jsonResponse);
+
+      if (jsonResponse['success'] && jsonResponse.containsKey('user')) {
+        setState(() {
+          employee_id = jsonResponse['user']['employeeId'];
+        });
+        print("EMPLOYEEEE ID: $employee_id");
+      } else if (jsonResponse["success"] == false) {
+        CustomSnackbar.show(context, "Failed to fetch User Profile. Please try again later.", "red");
+      }
+    } catch (e) {
+      CustomSnackbar.show(context, "Something went wrong. Please try again later.", "red");
+      print('Error in API call: $e');
+    } finally {
+      setState(() {
+        isLoading = false; // Stop loading
+      });
+    }
+  }
+
+Future<void> verifyEmployee() async{
+  setState(() {
+    isLoading = true;
+  });
+  await getProfileData();
+  try {
+    final response = await apiService.postWithFile('verify', selectedImage!, bodyFields: {"employee_id": employee_id});
+    // print(jsonDecode(response.body));
+    var jsonResponse = jsonDecode(response.body);
+    if (jsonResponse['status'] == 'Verified') {
+      setState(() {
+        isVerified = true;
+      });
+       print("IS VERIFIED 1: $isVerified");
+      CustomSnackbar.show(context, "Employee Verification Successful!", "green");
+      setState(() {
+    isLoading = false;
+  });
+    }
+    
+    else {
+      // setState(() {
+      //   isVerified = false;
+      // });
+      setState(() {
+    isLoading = false;
+  });
+      CustomSnackbar.show(context, "Employee Verification Failed!", "red");
+    }
+  }
+  catch (e) {
+    setState(() {
+    isLoading = false;
+  });
+    debugPrint("Error in verify Employee API call: $e");
+  }
+}
 
  Future<void> getActiveStatus() async {
   try {
@@ -242,15 +325,17 @@ class _HomePageState extends State<HomePage>
 
    if (jsonResponse['success']) {
   setState(() {
-    inOffice = jsonResponse['isActive'];
+    isActive = jsonResponse['isActive'];
     });
 }
 
  else if (jsonResponse["success"] == false) {
-    CustomSnackbar.show(context, "Failed to fetch Active Status. Please try again later.", "red");
+  debugPrint("Failed to fetch Active Status. Please try again later.");
+    // CustomSnackbar.show(context, "Failed to fetch Active Status. Please try again later.", "red");
     }
   } catch (e) {
-    CustomSnackbar.show(context, "Something went wrong. Please try again later.", "red");
+  debugPrint("Something went wrong. Please try again later.");
+    // CustomSnackbar.show(context, "Something went wrong. Please try again later.", "red");
     print('Error in Active Status API call: $e');
   } finally {
     setState(() {
@@ -301,7 +386,6 @@ Future<void> _pickImageFromCamera() async {
   }
 
 
-
   void _onTap() async {
     // print(token);
     if (isInRange) {
@@ -312,10 +396,25 @@ Future<void> _pickImageFromCamera() async {
           _playRippleAnimation = true;
         });
         if (inOffice) {
-          checkInOut(context, "checkin");
+          
           await _pickImageFromCamera();
           if (selectedImage != null) {
-            _startTimer();
+              
+            await verifyEmployee();
+           
+            print("IS VERIFIED 2: $isVerified");
+            if (isVerified){
+              // setState(() {
+               _flipController.forward();
+               
+              // });
+               checkInOut(context, "checkin");
+              _startTimer();
+               print("IS VERIFIED 3: $isVerified");
+              
+             
+            }
+            
           } else {
             setState(() {
               inOffice = false;
@@ -326,26 +425,27 @@ Future<void> _pickImageFromCamera() async {
           _counter = 0;
           formattedCounter = "00:00:00";
           checkInOut(context, "checkout");
+          _flipController.reverse();
         }
 
         // Start a timer if in range
         // _timer = Timer.periodic(const Duration(seconds: 1), (Timer t) => _updateTime());
 
-        Future.delayed(const Duration(seconds: 2), () {
-          setState(() {
-            _playRippleAnimation = false;
-          });
-          if (selectedImage != null) {
-            if (_isFlipped) {
-              _flipController.reverse();
-            } else {
-              _flipController.forward();
-            }
-            setState(() {
-              _isFlipped = !_isFlipped;
-            });
-          }
-        });
+        // Future.delayed(const Duration(seconds: 2), () {
+        //   setState(() {
+        //     _playRippleAnimation = false;
+        //   });
+        //   if (selectedImage != null && isVerified) {
+        //     if (_isFlipped) {
+        //       _flipController.reverse();
+        //     } else {
+        //       _flipController.forward();
+        //     }
+        //     setState(() {
+        //       _isFlipped = !_isFlipped;
+        //     });
+        //   }
+        // });
       }
     } else {
       // Show snackbar if not in range
@@ -357,7 +457,7 @@ Future<void> _pickImageFromCamera() async {
       );
     }
   }
-
+  
   void _updateTime() {
     setState(() {
       _timeString = _formatTime(DateTime.now());
@@ -782,7 +882,8 @@ Future<void> _pickImageFromCamera() async {
               ],
             ),
           ),
-           if (isLoading) // Show loader when API is loading
+
+          if (isLoading) // Show loader when API is loading
           Container(
             color: Colors.black.withOpacity(0.5), // Darken background
             child: const Center(

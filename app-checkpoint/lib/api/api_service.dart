@@ -32,7 +32,7 @@ class ApiService {
   Future<http.Response> postWithFile(String endpoint, File file,
       {Map<String, String>? headers, Map<String, dynamic>? bodyFields}) async {
     final request =
-        http.MultipartRequest('POST', Uri.parse('$baseUrl/$endpoint'));
+        http.MultipartRequest('POST', Uri.parse('${'https://1d34-14-97-132-203.ngrok-free.app'}/$endpoint'));
     request.headers.addAll(headers ?? {});
     bodyFields?.forEach((key, value) {
       request.fields[key] = value.toString();
