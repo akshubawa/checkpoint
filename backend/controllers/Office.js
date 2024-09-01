@@ -4,6 +4,7 @@ const Department = require("../models/department.models");
 const AttendenceSchema = require("../models/attendence.models");
 const OffsiteWork = require("../models/offsite.work.model");
 const OffSideWorkSchema = require("../models/offsideLocations.models");
+const LeaveRequest = require("../models/leaveRequest.models");
 
 exports.createOffice = async (req, res) => {
   try {
@@ -556,6 +557,148 @@ exports.checkOut = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Error occurred while checking out",
+      error: err.message,
+    });
+  }
+};
+
+exports.applyHalfDayLeave = async (req, res) => {
+  try {
+    const { id } = req.user;
+    const { reason } = req.body;
+
+    const user = await Employee.findById(id);
+
+    if (!user) {
+      return res.status(403).json({
+        success: false,
+        message: "User not found with this ID.",
+      });
+    }
+
+    const today = new Date().toISOString().split("T")[0];
+
+    const attendance = await AttendenceSchema.findOne({
+      employee: id,
+      date: {
+        $gte: new Date(today),
+        $lt: new Date(new Date(today).setDate(new Date(today).getDate() + 1)),
+      },
+    });
+
+    if (!attendance) {
+      return res.status(404).json({
+        success: false,
+        message: "No attendance record found for today.",
+      });
+    }
+
+    const currentTime = new Date();
+
+    // Create a leave request for admin approval
+    const leaveRequest = new LeaveRequest({
+      employee: id,
+      attendance: attendance._id,
+      exitTime: currentTime,
+      returnTime: null,
+      reason: reason,
+      isApprovedByAdmin: false,
+    });
+
+    await leaveRequest.save();
+
+    return res.status(200).json({
+      success: true,
+      message:
+        "Half-day leave request submitted successfully. Waiting for admin approval.",
+      leaveRequest,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Error occurred while applying for half-day leave.",
+      error: err.message,
+    });
+  }
+};
+
+exports.approveLeaveRequest = async (req, res) => {
+  try {
+    const { requestId, approve } = req.body;
+
+    // Find the leave request by ID
+    const leaveRequest = await LeaveRequest.findById(requestId).populate(
+      "attendance"
+    );
+
+    if (!leaveRequest) {
+      return res.status(404).json({
+        success: false,
+        message: "Leave request not found.",
+      });
+    }
+
+    if (!leaveRequest.attendance) {
+      return res.status(404).json({
+        success: false,
+        message: "Attendance record not found.",
+      });
+    }
+
+    // Approve or reject the leave request
+    leaveRequest.isApprovedByAdmin = approve;
+
+    if (approve) {
+      // Modify the attendance document (e.g., mark it as a leave or update the times)
+      leaveRequest.attendance.isOnLeave = true; // Example field, adjust as per your schema
+      leaveRequest.attendance.checkOutTime = leaveRequest.exitTime; // Assuming the exitTime is used as checkOutTime
+      leaveRequest.attendance.checkInTime = leaveRequest.returnTime; // Assuming returnTime is the check-in time after leave
+
+      // Save the attendance document
+      await leaveRequest.attendance.save();
+    }
+
+    // Save the leave request document
+    await leaveRequest.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Leave request processed successfully.",
+      leaveRequest,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Error occurred while processing leave request.",
+      error: err.message,
+    });
+  }
+};
+
+exports.getPendingLeaveRequests = async (req, res) => {
+  try {
+    const pendingRequests = await LeaveRequest.find({
+      isApprovedByAdmin: false,
+    })
+      .populate("employee", "name email")
+      .populate("attendance", "date");
+
+    if (pendingRequests.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No pending leave requests found.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Pending leave requests fetched successfully.",
+      pendingRequests,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Error occurred while fetching pending leave requests.",
       error: err.message,
     });
   }
