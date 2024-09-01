@@ -558,7 +558,7 @@ exports.checkOut = async (req, res) => {
 
     await sendNotification(
       registrationToken,
-      "check-in",
+      "check-out",
       "You have successfully checked out."
     );
 
