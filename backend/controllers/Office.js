@@ -456,6 +456,7 @@ exports.checkIn = async (req, res) => {
     user.allAttendence.push(newAttendence._id);
     await user.save();
 
+
     const registrationToken = user.deviceInfo.deviceToken;
 
     await sendNotification(
@@ -463,6 +464,7 @@ exports.checkIn = async (req, res) => {
       "Check-in",
       "You have successfully checked in."
     );
+
 
     return res.status(200).json({
       success: true,

@@ -145,142 +145,156 @@ class _ProfileState extends State<Profile> {
             ),
           ),
           SafeArea(
-            child: isLoading
-                ? const Center(child: CircularProgressIndicator()) // Show loader while loading
-                : SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        const Text(
-                          'Profile',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 20),
-                        ),
-                        const SizedBox(height: 10),
-                        const CircleAvatar(
-                          radius: 50,
-                          backgroundImage: NetworkImage(
-                            'https://img.freepik.com/free-photo/portrait-man-laughing_23-2148859448.jpg?size=338&ext=jpg&ga=GA1.1.2008272138.1724889600&semt=ais_hybrid',
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          userName, // Use the fetched user's name
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        Text(
-                          departmentName,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey,
-                          ),
-                        ),
-                        const SizedBox(height: 30),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Expanded(
-                                child: CircularIcons(
-                                    icon: Icons.people_alt_rounded,
-                                    label: 'My Team',
-                                    color: Colors.blue),
+            child: 
+                Stack(
+                  children: [
+                    SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            const Text(
+                              'Profile',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 20),
+                            ),
+                            const SizedBox(height: 10),
+                            const CircleAvatar(
+                              radius: 50,
+                              backgroundImage: NetworkImage(
+                                'https://img.freepik.com/free-photo/portrait-man-laughing_23-2148859448.jpg?size=338&ext=jpg&ga=GA1.1.2008272138.1724889600&semt=ais_hybrid',
                               ),
-                              Expanded(
-                                child: GestureDetector(
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              userName, // Use the fetched user's name
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            Text(
+                              departmentName,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            const SizedBox(height: 30),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Expanded(
+                                    child: CircularIcons(
+                                        icon: Icons.people_alt_rounded,
+                                        label: 'My Team',
+                                        color: Colors.blue),
+                                  ),
+                                  Expanded(
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        Navigator.pushReplacement(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                const Screen(initialPage: 1),
+                                          ),
+                                        );
+                                      },
+                                      child: const CircularIcons(
+                                          icon: Icons.calendar_month_rounded,
+                                          label: 'Attendence',
+                                          color: Colors.purple),
+                                    ),
+                                  ),
+                                  const Expanded(
+                                    child: CircularIcons(
+                                        icon: Icons.settings,
+                                        label: 'Settings',
+                                        color: Colors.orange),
+                                  ),
+                                  const Expanded(
+                                    child: CircularIcons(
+                                        icon: Icons.person,
+                                        label: 'My Profile',
+                                        color: Colors.blueAccent),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 40),
+                            Column(
+                              children: [
+                                SideMenuTile(
+                                  title: "Notifications",
+                                  icon: Icons.notifications_active,
+                                  onTap: () {},
+                                ),
+                                SideMenuTile(
+                                  title: "My Leaves",
+                                  icon: Icons.medical_services_rounded,
                                   onTap: () {
                                     Navigator.pushReplacement(
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) =>
-                                            const Screen(initialPage: 1),
+                                            const Screen(initialPage: 2),
                                       ),
                                     );
                                   },
-                                  child: const CircularIcons(
-                                      icon: Icons.calendar_month_rounded,
-                                      label: 'Attendence',
-                                      color: Colors.purple),
                                 ),
-                              ),
-                              const Expanded(
-                                child: CircularIcons(
-                                    icon: Icons.settings,
-                                    label: 'Settings',
-                                    color: Colors.orange),
-                              ),
-                              const Expanded(
-                                child: CircularIcons(
-                                    icon: Icons.person,
-                                    label: 'My Profile',
-                                    color: Colors.blueAccent),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 40),
-                        Column(
-                          children: [
-                            SideMenuTile(
-                              title: "Notifications",
-                              icon: Icons.notifications_active,
-                              onTap: () {},
-                            ),
-                            SideMenuTile(
-                              title: "My Leaves",
-                              icon: Icons.medical_services_rounded,
-                              onTap: () {
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const Screen(initialPage: 2),
-                                  ),
-                                );
-                              },
-                            ),
-                            SideMenuTile(
-                              title: "Customer Support",
-                              icon: Icons.support_agent_rounded,
-                              onTap: () {},
-                            ),
-                            SideMenuTile(
-                              title: "Logout",
-                              icon: Icons.logout,
-                              onTap: () {
-                                logout(context);
-                              },
-                            ),
-                            const Divider(
-                              color: Colors.grey,
-                              height: 1,
-                            ),
-                            const SizedBox(
-                              height: 10,
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  "Version: $_version",
-                                  style: TextStyle(
-                                      color: Colors.black.withOpacity(0.5),
-                                      fontSize: 14),
-                                )
+                                SideMenuTile(
+                                  title: "Customer Support",
+                                  icon: Icons.support_agent_rounded,
+                                  onTap: () {},
+                                ),
+                                SideMenuTile(
+                                  title: "Logout",
+                                  icon: Icons.logout,
+                                  onTap: () {
+                                    logout(context);
+                                  },
+                                ),
+                                const Divider(
+                                  color: Colors.grey,
+                                  height: 1,
+                                ),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "Version: $_version",
+                                      style: TextStyle(
+                                          color: Colors.black.withOpacity(0.5),
+                                          fontSize: 14),
+                                    )
+                                  ],
+                                ),
+                                const SizedBox(
+                                  height: 100,
+                                ),
                               ],
-                            ),
-                            const SizedBox(
-                              height: 100,
-                            ),
+                            )
                           ],
-                        )
-                      ],
-                    ),
-                  ),
+                        ),
+                      ),
+                      if (isLoading)
+                     
+                Container(
+            color: Colors.black.withOpacity(0.5), // Darken background
+            child: const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            ),
+          )
+                      
+                  ],
+                ),
           ),
         ],
       ),

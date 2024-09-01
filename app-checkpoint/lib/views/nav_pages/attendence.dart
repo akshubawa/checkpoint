@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:checkpoint/api/api_service.dart';
-import 'package:checkpoint/views/nav_pages/attendance_card.dart';
+import 'package:checkpoint/widgets/cards/attendance_card.dart';
 import 'package:checkpoint/widgets/background/background.dart';
 import 'package:checkpoint/widgets/snackbar/custom_snackbar.dart';
 import 'package:flutter/material.dart';

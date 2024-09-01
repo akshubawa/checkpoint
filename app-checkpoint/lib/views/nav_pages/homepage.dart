@@ -2,8 +2,11 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:checkpoint/api/api_service.dart';
+import 'package:checkpoint/widgets/circle_widgets/in_home_widget.dart';
+import 'package:checkpoint/widgets/circle_widgets/in_office_widget.dart';
 import 'package:checkpoint/views/notification.dart';
 import 'package:checkpoint/widgets/background/background.dart';
 import 'package:checkpoint/widgets/snackbar/custom_snackbar.dart';
@@ -11,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:simple_ripple_animation/simple_ripple_animation.dart';
@@ -25,6 +29,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
+      
   final String company = "GAIL Limited, Greater Noida Office";
   final String date = "";
   bool _playRippleAnimation = false; // Move this outside the build method
@@ -34,6 +39,9 @@ class _HomePageState extends State<HomePage>
   String _timeString = "";
   String _dateString = "";
   Timer? _timer;
+
+  File? selectedImage;
+
 
   double latitude = 0; // Current location latitude
   double longitude = 0; // Current location longitude
@@ -47,8 +55,8 @@ class _HomePageState extends State<HomePage>
   bool inOffice = false;
   late String token = "";
 
-  late DateTime? checkInTime = DateTime.now();
-  late DateTime? checkOutTime = DateTime.now();
+  DateTime? checkInTime;
+  DateTime? checkOutTime;
   late String? workingHour = "--:--";
   bool isLoading = true;
 
@@ -116,6 +124,7 @@ class _HomePageState extends State<HomePage>
       });
       print(token);
     }
+    getActiveStatus();
     getCheckInCheckOutData();
     // print(jwtDecodedToken);
   }
@@ -146,14 +155,14 @@ class _HomePageState extends State<HomePage>
 
   int _counter = 0;
   late Timer _workingTimer;
-  String _formattedCounter = "00:00:00";
+  String formattedCounter = "00:00:00";
   final ApiService apiService = ApiService();
 
   void _startTimer() {
     _workingTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         _counter++;
-        _formattedCounter = _formatDuration(Duration(seconds: _counter));
+        formattedCounter = _formatDuration(Duration(seconds: _counter));
       });
     });
   }
@@ -176,32 +185,39 @@ class _HomePageState extends State<HomePage>
       'get-checkin-checkout',
       headers: headers,
     );
-    Map jsonResponse = jsonDecode(response.body);
+
+    if (response.body == null) {
+      throw Exception('Response body is null');
+    }
+
+    Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+
     print(jsonResponse);
 
-   if (jsonResponse['success']) {
-  setState(() {
-    checkInTime = jsonResponse.containsKey('checkInTime')
-        ? DateTime.parse(jsonResponse['checkInTime']) 
-        : null;
-    checkOutTime = jsonResponse.containsKey('checkOutTime') 
-        ? DateTime.parse(jsonResponse['checkOutTime'])
-        : null;
-    workingHour = jsonResponse.containsKey('workingHour') 
-        ? jsonResponse['workingHour']
-        : null;
-  });
-}
-
- else if (jsonResponse["success"] == false) {
-    checkInTime = null;
-    checkOutTime = null;
-    workingHour = null;
-      CustomSnackbar.show(context, "Failed to fetch working hours. Please try again later.", "red");
+    if (jsonResponse['success'] == true) {
+      setState(() {
+        checkInTime = jsonResponse.containsKey('checkInTime') && jsonResponse['checkInTime'] != null
+            ? DateTime.parse(jsonResponse['checkInTime'])
+            : null;
+        checkOutTime = jsonResponse.containsKey('checkOutTime') && jsonResponse['checkOutTime'] != null
+            ? DateTime.parse(jsonResponse['checkOutTime'])
+            : null;
+        workingHour = jsonResponse.containsKey('workingHour') && jsonResponse['workingHour'] != null
+            ? jsonResponse['workingHour'].toString()
+            : null;
+      });
+    } else if (jsonResponse['success'] == false) {
+      setState(() {
+        checkInTime = null;
+        checkOutTime = null;
+        workingHour = null;
+      });
+      CustomSnackbar.show(
+          context, "Failed to fetch working hours. Please try again later.", "red");
     }
   } catch (e) {
     CustomSnackbar.show(context, "Something went wrong. Please try again later.", "red");
-    print('Error in API call: $e');
+    print('Error in CheckInCheckOut API call: $e');
   } finally {
     setState(() {
       isLoading = false; // Stop loading
@@ -210,6 +226,38 @@ class _HomePageState extends State<HomePage>
 }
 
 
+ Future<void> getActiveStatus() async {
+  try {
+    final headers = <String, String>{
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+    };
+
+    final response = await apiService.get(
+      'get-is-active',
+      headers: headers,
+    );
+    Map jsonResponse = jsonDecode(response.body);
+    print(jsonResponse);
+
+   if (jsonResponse['success']) {
+  setState(() {
+    inOffice = jsonResponse['isActive'];
+    });
+}
+
+ else if (jsonResponse["success"] == false) {
+    CustomSnackbar.show(context, "Failed to fetch Active Status. Please try again later.", "red");
+    }
+  } catch (e) {
+    CustomSnackbar.show(context, "Something went wrong. Please try again later.", "red");
+    print('Error in Active Status API call: $e');
+  } finally {
+    setState(() {
+      isLoading = false; // Stop loading
+    });
+  }
+}
 
  Future<void> checkInOut(BuildContext context, String command) async {
   try {
@@ -239,69 +287,76 @@ class _HomePageState extends State<HomePage>
   }
 }
 
+Future<void> _pickImageFromCamera() async {
+    final returnedImage = await ImagePicker().pickImage(
+      source: ImageSource.camera,
+      preferredCameraDevice: CameraDevice.front, // Specify front camera
+    );
 
-
-  void _onTap() {
-    // print(token);
-  if (isInRange) {
-    // Flip or change only if in range
-    if (!_flipController.isAnimating) {
+    if (returnedImage != null) {
       setState(() {
-        inOffice = !inOffice;
-        _playRippleAnimation = true;
-      });
-      if (inOffice) {
-        checkInOut(context, "checkin");
-        // Future.delayed(const Duration(seconds: 3));
-        _startTimer();
-      } else {
-        _workingTimer.cancel();
-        _counter = 0;
-        _formattedCounter = "00:00:00";
-        checkInOut(context, "checkout");
-      }
-
-      // Start a timer if in range
-      // _timer = Timer.periodic(const Duration(seconds: 1), (Timer t) => _updateTime());
-
-      Future.delayed(const Duration(seconds: 2), () {
-        setState(() {
-          _playRippleAnimation = false;
-        });
-        if (_isFlipped) {
-          _flipController.reverse();
-        } else {
-          _flipController.forward();
-        }
-        setState(() {
-          _isFlipped = !_isFlipped;
-        });
+        selectedImage = File(returnedImage.path);
       });
     }
-  } else {
-    // Show snackbar if not in range
-    // CustomSnackbar.show(context, "You are not in range", "yellow");
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("You are not in range"),
-        duration: Duration(seconds: 2),
-      ),
-    );
   }
-}
 
-  // void _onSwipe() {
-  //   if (!_playRippleAnimation && !_flipController.isAnimating) {
-  //     if (_isFlipped) {
-  //       _flipController.reverse();
-  //     } else {
-  //       _flipController.forward();
-  //     }
-  //     setState(() {
-  //       _isFlipped = !_isFlipped;
-  //     });
-  //   }
-  // }
+
+
+  void _onTap() async {
+    // print(token);
+    if (isInRange) {
+      // Flip or change only if in range
+      if (!_flipController.isAnimating) {
+        setState(() {
+          inOffice = !inOffice;
+          _playRippleAnimation = true;
+        });
+        if (inOffice) {
+          checkInOut(context, "checkin");
+          await _pickImageFromCamera();
+          if (selectedImage != null) {
+            _startTimer();
+          } else {
+            setState(() {
+              inOffice = false;
+            });
+          }
+        } else {
+          _workingTimer.cancel();
+          _counter = 0;
+          formattedCounter = "00:00:00";
+          checkInOut(context, "checkout");
+        }
+
+        // Start a timer if in range
+        // _timer = Timer.periodic(const Duration(seconds: 1), (Timer t) => _updateTime());
+
+        Future.delayed(const Duration(seconds: 2), () {
+          setState(() {
+            _playRippleAnimation = false;
+          });
+          if (selectedImage != null) {
+            if (_isFlipped) {
+              _flipController.reverse();
+            } else {
+              _flipController.forward();
+            }
+            setState(() {
+              _isFlipped = !_isFlipped;
+            });
+          }
+        });
+      }
+    } else {
+      // Show snackbar if not in range
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("You are not in range"),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
 
   void _updateTime() {
     setState(() {
@@ -557,16 +612,12 @@ class _HomePageState extends State<HomePage>
                                                                   const Duration(
                                                                       seconds: 2),
                                                               child: isFrontVisible
-                                                                  ? _buildCheckinCheckoutButton(
-                                                                      screenWidth)
-                                                                  : _buildBackside(
-                                                                      screenWidth),
+                                                                  ? InHomeWidget(screenWidth: screenWidth)
+                                                                  : InOfficeWidget(formattedCounter: formattedCounter, screenWidth: screenWidth),
                                                             )
                                                           : isFrontVisible
-                                                              ? _buildCheckinCheckoutButton(
-                                                                  screenWidth)
-                                                              : _buildBackside(
-                                                                  screenWidth),
+                                                              ? InHomeWidget(screenWidth: screenWidth)
+                                                              : InOfficeWidget(formattedCounter: formattedCounter, screenWidth: screenWidth),
                                                     );
                                                   }),
                                             ),
@@ -744,104 +795,5 @@ class _HomePageState extends State<HomePage>
       ),
     );
   }
-
-  Widget _buildCheckinCheckoutButton(double screenWidth) {
-    return Container(
-      width: screenWidth * .57,
-      height: screenWidth * .57,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xff3F81DE),
-            Color(0xFF9282DF),
-          ],
-          stops: [0.38, .75],
-          begin: Alignment.topRight,
-          end: Alignment.bottomLeft,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF9282DF).withOpacity(.75),
-            blurRadius: 8,
-            offset: const Offset(-3, 7),
-          ),
-        ],
-      ),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              UIconsPro.regularRounded.tap,
-              color: Colors.white,
-              size: screenWidth * .25,
-            ),
-            Text(
-              "CHECK IN",
-              style: GoogleFonts.nunitoSans(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBackside(double screenWidth) {
-    return Container(
-      width: screenWidth * .57,
-      height: screenWidth * .57,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xffDE3F81),
-            Color(0xFFDF8292),
-          ],
-          stops: [0.38, .75],
-          begin: Alignment.topRight,
-          end: Alignment.bottomLeft,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFDF8292).withOpacity(.75),
-            blurRadius: 8,
-            offset: const Offset(-3, 7),
-          ),
-        ],
-      ),
-      child: Transform.flip(
-        flipX: true,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-             Text(
-              _formattedCounter,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: screenWidth * .10,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-              Text(
-                "CHECK OUT",
-                style: GoogleFonts.nunitoSans(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
   
 }
-
