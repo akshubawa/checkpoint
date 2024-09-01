@@ -5,7 +5,7 @@ const AttendenceSchema = require("../models/attendence.models");
 const OffsiteWork = require("../models/offsite.work.model");
 const OffSideWorkSchema = require("../models/offsideLocations.models");
 const LeaveRequest = require("../models/leaveRequest.models");
-const { sendNotification } = require("../utils/notify");
+const sendNotification = require("../utils/notify");
 
 exports.createOffice = async (req, res) => {
   try {
@@ -456,7 +456,6 @@ exports.checkIn = async (req, res) => {
     user.allAttendence.push(newAttendence._id);
     await user.save();
 
-
     const registrationToken = user.deviceInfo.deviceToken;
 
     await sendNotification(
@@ -464,7 +463,6 @@ exports.checkIn = async (req, res) => {
       "Check-in",
       "You have successfully checked in."
     );
-
 
     return res.status(200).json({
       success: true,
@@ -555,6 +553,14 @@ exports.checkOut = async (req, res) => {
 
     user.isActive = false;
     await user.save();
+
+    const registrationToken = user.deviceInfo.deviceToken;
+
+    await sendNotification(
+      registrationToken,
+      "check-in",
+      "You have successfully checked out."
+    );
 
     // Save the updated attendance record
     await lastAttendance.save();
