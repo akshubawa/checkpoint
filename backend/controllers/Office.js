@@ -455,6 +455,15 @@ exports.checkIn = async (req, res) => {
     user.allAttendence.push(newAttendence._id);
     await user.save();
 
+    // Send notification to the employee
+    const notificationData = {
+      title: "Check-In Successful",
+      body: `You have successfully checked in at ${currentTime.toLocaleTimeString()}.`,
+      token: user.deviceInfo.deviceToken, // assuming `deviceToken` is stored under `deviceInfo`
+    };
+
+    await sendNotification(notificationData);
+
     return res.status(200).json({
       success: true,
       message: "Checked in successfully.",
