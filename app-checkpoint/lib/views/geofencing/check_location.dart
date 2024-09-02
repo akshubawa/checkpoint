@@ -9,8 +9,8 @@ class CheckLocationView extends StatefulWidget {
 }
 
 class _CheckLocationViewState extends State<CheckLocationView> {
-  double latitude = 28.449789; // Current location latitude
-  double longitude = 77.583860; // Current location longitude
+  double latitude = 0; // Current location latitude
+  double longitude = 0; // Current location longitude
 
   double targetLatitude = 28.449371;
   double targetLongitude = 77.584114;

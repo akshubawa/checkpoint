@@ -1,5 +1,5 @@
 import 'package:checkpoint/screen/ui/widgets/bottom_navigation.dart';
-import 'package:checkpoint/views/nav_pages/attendence.dart';
+import 'package:checkpoint/widgets/cards/attendence.dart';
 import 'package:checkpoint/views/nav_pages/homepage.dart';
 import 'package:checkpoint/views/nav_pages/profile.dart';
 import 'package:checkpoint/views/nav_pages/my_leaves.dart';
