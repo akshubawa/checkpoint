@@ -36,7 +36,6 @@ class _HomePageState extends State<HomePage>
   bool _playRippleAnimation = false; // Move this outside the build method
   late AnimationController _flipController;
   late Animation<double> _flipAnimation;
-  bool _isFlipped = false;
   String _timeString = "";
   String _dateString = "";
   Timer? _timer;
@@ -63,7 +62,9 @@ class _HomePageState extends State<HomePage>
   bool isLoading = true;
   late Map jwtDecodedToken = {};
   late String employee_id = "";
-  late bool isVerified = false;
+  late bool isVerified = true;
+
+  DateTime? checkInStartTime;
 
   void getLocation() async {
     await Geolocator.checkPermission();
@@ -150,6 +151,7 @@ class _HomePageState extends State<HomePage>
     _flipAnimation = Tween<double>(begin: 0, end: 1).animate(_flipController);
     getLocation();
     getTokenFromPrefs();
+    loadCheckInStatus();
   }
 
   @override
@@ -160,19 +162,122 @@ class _HomePageState extends State<HomePage>
     super.dispose();
   }
 
+   Future<void> loadCheckInStatus() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      inOffice = prefs.getBool('inOffice') ?? false;
+      isActive = prefs.getBool('isActive') ?? false;
+      if (isActive) {
+        _flipController.forward();
+        String? storedStartTime = prefs.getString('checkInStartTime');
+        if (storedStartTime != null) {
+          checkInStartTime = DateTime.parse(storedStartTime);
+          _startTimer();
+        }
+      } else {
+        _flipController.reverse();
+      }
+    });
+  }
+
+  void _startTimer() {
+    _workingTimer = Timer.periodic(const Duration(seconds: 1), (timer) async {
+      if (checkInStartTime != null) {
+        Duration difference = DateTime.now().difference(checkInStartTime!);
+        setState(() {
+          _counter = difference.inSeconds;
+          formattedCounter = _formatDuration(difference);
+        });
+      }
+    });
+  }
+
+  Future<void> checkInOut(BuildContext context, String command) async {
+    try {
+      final Map<String, String> headers = {
+        'Authorization': 'Bearer $token',
+      };
+
+      final response = await apiService.post(command, headers: headers, body: "");
+      
+      if (response.statusCode == 200) {
+        var jsonResponse = jsonDecode(response.body);
+        print(jsonResponse);
+        
+        final SharedPreferences prefs = await SharedPreferences.getInstance();
+        if (command == 'checkin') {
+          checkInStartTime = DateTime.now();
+          await prefs.setString('checkInStartTime', checkInStartTime!.toIso8601String());
+          await prefs.setBool('inOffice', true);
+          await prefs.setBool('isActive', true);
+          setState(() {
+            inOffice = true;
+            isActive = true;
+          });
+          _startTimer();
+          _flipController.forward();
+        } else {
+          await prefs.remove('checkInStartTime');
+          await prefs.setBool('inOffice', false);
+          await prefs.setBool('isActive', false);
+          setState(() {
+            inOffice = false;
+            isActive = false;
+            _counter = 0;
+            formattedCounter = "00:00:00";
+            checkInStartTime = null;
+          });
+          _workingTimer.cancel();
+          _flipController.reverse();
+        }
+        
+        CustomSnackbar.show(context, (command == 'checkin')? "Check-in Successful." : "Check-out Successful.", "green");
+      } else {
+        CustomSnackbar.show(context, "Failed to $command. Please try again later.", "red");
+      }
+    } catch (e) {
+      CustomSnackbar.show(context, "Something went wrong. Please try again later.", "red");
+      debugPrint(e.toString());
+    }
+  }
+
+  void _onTap() async {
+    if (isInRange) {
+      if (!_flipController.isAnimating) {
+        setState(() {
+          _playRippleAnimation = true;
+        });
+        if (!inOffice) {
+          // await _pickImageFromCamera();
+          // if (selectedImage != null) {
+            if (isVerified){
+              checkInOut(context, "checkin");
+            // }
+          } else {
+            setState(() {
+              _playRippleAnimation = false;
+            });
+          }
+        } else {
+          checkInOut(context, "checkout");
+        }
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("You are not in range"),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+
   int _counter = 0;
   late Timer _workingTimer;
   String formattedCounter = "00:00:00";
   final ApiService apiService = ApiService();
 
-  void _startTimer() {
-    _workingTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {
-        _counter++;
-        formattedCounter = _formatDuration(Duration(seconds: _counter));
-      });
-    });
-  }
 
   String _formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, "0");
@@ -192,10 +297,6 @@ class _HomePageState extends State<HomePage>
       'get-checkin-checkout',
       headers: headers,
     );
-
-    if (response.body == null) {
-      throw Exception('Response body is null');
-    }
 
     Map<String, dynamic> jsonResponse = jsonDecode(response.body);
 
@@ -344,33 +445,6 @@ Future<void> verifyEmployee() async{
   }
 }
 
- Future<void> checkInOut(BuildContext context, String command) async {
-  try {
-    final Map<String, String> headers = {
-      'Authorization': 'Bearer $token',
-    };
-
-    // Send check-in/check-out request to API
-    final response = await apiService.post(command, headers: headers, body: "");
-
-    
-    if (response.statusCode == 200) {
-      // If you expect a JSON response that contains the token
-      var jsonResponse = jsonDecode(response.body);
-      print(jsonResponse);
-      // Handle the successful response (if any action is required)
-      
-      CustomSnackbar.show(context, (command == 'checkin')? "Check-in Successful." : "Check-out Successful.", "green");
-    } else {
-      // Handle unsuccessful response
-      CustomSnackbar.show(context, "Failed to $command. Please try again later.", "red");
-    }
-  } catch (e) {
-    // Handle any errors that occur during the request
-    CustomSnackbar.show(context, "Something went wrong. Please try again later.", "red");
-    debugPrint(e.toString());
-  }
-}
 
 Future<void> _pickImageFromCamera() async {
     final returnedImage = await ImagePicker().pickImage(
@@ -386,78 +460,6 @@ Future<void> _pickImageFromCamera() async {
   }
 
 
-  void _onTap() async {
-    // print(token);
-    if (isInRange) {
-      // Flip or change only if in range
-      if (!_flipController.isAnimating) {
-        setState(() {
-          inOffice = !inOffice;
-          _playRippleAnimation = true;
-        });
-        if (inOffice) {
-          
-          await _pickImageFromCamera();
-          if (selectedImage != null) {
-              
-            await verifyEmployee();
-           
-            print("IS VERIFIED 2: $isVerified");
-            if (isVerified){
-              // setState(() {
-               _flipController.forward();
-               
-              // });
-               checkInOut(context, "checkin");
-              _startTimer();
-               print("IS VERIFIED 3: $isVerified");
-              
-             
-            }
-            
-          } else {
-            setState(() {
-              inOffice = false;
-            });
-          }
-        } else {
-          _workingTimer.cancel();
-          _counter = 0;
-          formattedCounter = "00:00:00";
-          checkInOut(context, "checkout");
-          _flipController.reverse();
-        }
-
-        // Start a timer if in range
-        // _timer = Timer.periodic(const Duration(seconds: 1), (Timer t) => _updateTime());
-
-        // Future.delayed(const Duration(seconds: 2), () {
-        //   setState(() {
-        //     _playRippleAnimation = false;
-        //   });
-        //   if (selectedImage != null && isVerified) {
-        //     if (_isFlipped) {
-        //       _flipController.reverse();
-        //     } else {
-        //       _flipController.forward();
-        //     }
-        //     setState(() {
-        //       _isFlipped = !_isFlipped;
-        //     });
-        //   }
-        // });
-      }
-    } else {
-      // Show snackbar if not in range
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("You are not in range"),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
-  }
-  
   void _updateTime() {
     setState(() {
       _timeString = _formatTime(DateTime.now());
@@ -690,36 +692,31 @@ Future<void> _pickImageFromCamera() async {
                                             // },
                                             child: Padding(
                                               padding: const EdgeInsets.all(8.0),
-                                              child: AnimatedBuilder(
-                                                  animation: _flipAnimation,
-                                                  builder: (context, child) {
-                                                    final angle = _flipAnimation
-                                                            .value *
-                                                        3.1416; // pi for half rotation
-                                                    final isFrontVisible =
-                                                        angle < 1.5708; // pi/2
-          
-                                                    return Transform(
-                                                      transform:
-                                                          Matrix4.rotationY(angle),
-                                                      alignment: Alignment.center,
-                                                      child: _playRippleAnimation
-                                                          ? RippleAnimation(
-                                                              repeat: false,
-                                                              minRadius: 75,
-                                                              ripplesCount: 4,
-                                                              duration:
-                                                                  const Duration(
-                                                                      seconds: 2),
-                                                              child: isFrontVisible
-                                                                  ? InHomeWidget(screenWidth: screenWidth)
-                                                                  : InOfficeWidget(formattedCounter: formattedCounter, screenWidth: screenWidth),
-                                                            )
-                                                          : isFrontVisible
-                                                              ? InHomeWidget(screenWidth: screenWidth)
-                                                              : InOfficeWidget(formattedCounter: formattedCounter, screenWidth: screenWidth),
-                                                    );
-                                                  }),
+                                              child:
+                                              AnimatedBuilder(
+      animation: _flipAnimation,
+      builder: (context, child) {
+        final angle = _flipAnimation.value * 3.1416;
+        final isFrontVisible = angle < 1.5708;
+
+        return Transform(
+          transform: Matrix4.rotationY(angle),
+          alignment: Alignment.center,
+          child: _playRippleAnimation
+            ? RippleAnimation(
+                repeat: false,
+                minRadius: 75,
+                ripplesCount: 4,
+                duration: const Duration(seconds: 2),
+                child: isFrontVisible
+                  ? InHomeWidget(screenWidth: screenWidth)
+                  : InOfficeWidget(formattedCounter: formattedCounter, screenWidth: screenWidth),
+              )
+            : isFrontVisible
+              ? InHomeWidget(screenWidth: screenWidth)
+              : InOfficeWidget(formattedCounter: formattedCounter, screenWidth: screenWidth),
+        );
+      },),
                                             ),
                                           ),
                                         ),

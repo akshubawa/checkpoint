@@ -73,10 +73,32 @@ class NotificationService {
       RemoteMessage message) async {
     debugPrint("Handling a background message: ${message.messageId}");
 
-    final data = message.data;
+    final notification = message.notification; // Get notification object
+  final data = message.data;
+
+  String? title = notification?.title; // Extract title
+  String? body = notification?.body; // Extract body
     print("DATA: $data");
     Map<String, String> payloadMap = Map<String, String>.from(data);
     log("payloadMap: $payloadMap");
+
+    await AwesomeNotifications().createNotification(
+        content: NotificationContent(
+          id: -1,
+          channelKey: "notification_channel",
+          title: title,
+          body: body,
+          notificationLayout: NotificationLayout.Default,
+          category: NotificationCategory.Message,
+          wakeUpScreen: true,
+          fullScreenIntent: true,
+          autoDismissible: false,
+          actionType: ActionType.Default,
+          payload: payloadMap,
+          backgroundColor: Colors.orange,
+          // largeIcon: data["image"]! ?? ""
+        ),
+      );
 
     // if (data["type"] == "message") {
     //   await AwesomeNotifications().createNotification(
@@ -143,47 +165,33 @@ class NotificationService {
   static Future<void> showNotification({
     required final RemoteMessage message,
   }) async {
-    final data = message.data;
+    final notification = message.notification; // Get notification object
+  final data = message.data;
+
+  String? title = notification?.title; // Extract title
+  String? body = notification?.body; // Extract body
     Map<String, String> payloadMap = Map<String, String>.from(data);
 
     log("payloadMap: $payloadMap");
 
     // if (data["type"] == "call") {
-    //   await AwesomeNotifications().createNotification(
-    //     content: NotificationContent(
-    //       id: -1,
-    //       channelKey: "call_channel",
-    //       title: data["title"]! ?? "Incoming Call",
-    //       body: data["body"],
-    //       notificationLayout: NotificationLayout.Default,
-    //       category: NotificationCategory.Call,
-    //       wakeUpScreen: true,
-    //       fullScreenIntent: true,
-    //       autoDismissible: false,
-    //       actionType: ActionType.Default,
-    //       payload: payloadMap,
-    //       backgroundColor: Colors.orange,
-    //       // largeIcon: data["image"]! ?? ""
-    //     ),
-    //     actionButtons: [
-    //       NotificationActionButton(
-    //         key: "ACCEPT",
-    //         label: "Accept Call",
-    //         color: Colors.green,
-    //         autoDismissible: true,
-    //         enabled: true,
-    //         actionType: ActionType.Default,
-    //       ),
-    //       NotificationActionButton(
-    //         key: "REJECT",
-    //         label: "Reject Call",
-    //         color: Colors.red,
-    //         autoDismissible: true,
-    //         enabled: true,
-    //         actionType: ActionType.Default,
-    //       ),
-    //     ],
-    //   );
+      await AwesomeNotifications().createNotification(
+        content: NotificationContent(
+          id: -1,
+          channelKey: "notification_channel",
+          title: title,
+          body: body,
+          notificationLayout: NotificationLayout.Default,
+          category: NotificationCategory.Message,
+          wakeUpScreen: true,
+          fullScreenIntent: true,
+          autoDismissible: false,
+          actionType: ActionType.Default,
+          payload: payloadMap,
+          backgroundColor: Colors.orange,
+          // largeIcon: data["image"]! ?? ""
+        ),
+      );
     // } else if (data["type"] == "message") {
     //   await AwesomeNotifications().createNotification(
     //     content: NotificationContent(
