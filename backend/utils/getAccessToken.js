@@ -4,7 +4,7 @@ const { JWT } = require("google-auth-library");
 async function getAccessToken() {
   try {
     // Load the service account key file
-    const serviceAccountKey = require("../app-checkpoint-firebase-adminsdk-migey-00bfd8f74f.json"); // Update this path to where your key.json is located
+    const serviceAccountKey = require("../app-checkpoint-firebase-adminsdk-migey-00bfd8f74f.json");
 
     // Create a new JWT client
     const jwtClient = new JWT({
@@ -14,8 +14,11 @@ async function getAccessToken() {
     });
 
     // Generate an access token
+    console.log("inside the getAccessToken function before")
     const accessToken = await jwtClient.getAccessToken();
-    return accessToken.token; // Make sure to return the token string
+    console.log("inside the getAccessToken function after")
+    return accessToken; // Make sure to return the token string
+    // console.log()
   } catch (error) {
     console.error("Error:", error.message);
     throw error; // Rethrow to handle errors in calling functions

@@ -6,6 +6,7 @@ const OffsiteWork = require("../models/offsite.work.model");
 const OffSideWorkSchema = require("../models/offsideLocations.models");
 const LeaveRequest = require("../models/leaveRequest.models");
 const sendNotification = require("../utils/notify");
+const getAccessToken = require('../utils/getAccessToken');
 
 exports.createOffice = async (req, res) => {
   try {
@@ -413,171 +414,131 @@ exports.getAllDepartments = async (req, res) => {
 };
 
 exports.checkIn = async (req, res) => {
-  try {
-    const { id } = req.user;
+    try {
+      const { id } = req.user;
+      const user = await Employee.findById(id);
 
-    const user = await Employee.findById(id);
+      if (!user) {
+        return res.status(403).json({
+          success: false,
+          message: "User not found with this id.",
+        });
+      }
 
-    if (!user) {
-      return res.status(403).json({
+      const department = await Department.findById(user.departmentId);
+      if (!department) {
+        return res.status(403).json({
+          success: false,
+          message: "Department not found with this id.",
+        });
+      }
+
+      const currentTime = new Date();
+      const newAttendence = new AttendenceSchema({
+        employee: id,
+        checkInTime: currentTime,
+        checkOutTime: null,
+        isLateCheckIn: currentTime > department.expectedCheckInTime,
+      });
+
+      await newAttendence.save();
+      user.isActive = true;
+      user.allAttendence.push(newAttendence._id);
+      await user.save();
+
+      const registrationToken = user.deviceInfo.deviceToken;
+
+      await sendNotification(
+        deviceToken = registrationToken,
+        "Check-in",
+        "You have successfully checked in.",
+        null,
+        {},
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: "Checked in successfully.",
+        attendence: newAttendence,
+      });
+    } catch (err) {
+      return res.status(500).json({
         success: false,
-        message: "User not found with this id.",
+        message: "Error occurred while checking in",
+        error: err.message,
       });
     }
+  };
 
-    const departmentId = user.departmentId;
-    const department = await Department.findById(departmentId);
+  // Check-Out Function
+  exports.checkOut = async (req, res) => {
+    try {
+      const { id } = req.user;
+      const user = await Employee.findById(id);
+      if (!user) {
+        return res.status(403).json({
+          success: false,
+          message: "User not found with this id.",
+        });
+      }
 
-    if (!department) {
-      return res.status(403).json({
+      const today = new Date().toISOString().split("T")[0];
+      const lastAttendance = await AttendenceSchema.findOne({
+        employee: id,
+        date: {
+          $gte: new Date(today),
+          $lt: new Date(new Date(today).setDate(new Date(today).getDate() + 1)),
+        },
+      }).sort({ checkInTime: -1 });
+
+      if (!lastAttendance) {
+        return res.status(404).json({
+          success: false,
+          message: "No attendance record found for today.",
+        });
+      }
+
+      const currentTime = new Date();
+      lastAttendance.checkOutTime = currentTime;
+      lastAttendance.totalWorkingHours = (currentTime - new Date(lastAttendance.checkInTime)) / (1000 * 60 * 60);
+
+      const department = await Department.findById(user.departmentId);
+      if (!department) {
+        return res.status(404).json({
+          success: false,
+          message: "Department not found with this id.",
+        });
+      }
+
+      lastAttendance.isEarlyCheckout = currentTime < department.expectedCheckOutTime;
+
+      user.isActive = false;
+      await user.save();
+      await lastAttendance.save();
+
+      const registrationToken = user.deviceInfo.deviceToken;
+
+      await sendNotification(
+        deviceToken = registrationToken,
+        "Check-out",
+        "You have successfully checked out.",
+        null,
+        {}
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: "Checked out successfully.",
+        attendence: lastAttendance,
+      });
+    } catch (err) {
+      return res.status(500).json({
         success: false,
-        message: "Department not found with this id.",
+        message: "Error occurred while checking out",
+        error: err.message,
       });
     }
-
-    // Get current time
-    const currentTime = new Date();
-
-    const newAttendence = new AttendenceSchema({
-      employee: id,
-      checkInTime: currentTime,
-      checkOutTime: null,
-    });
-
-    // Check if check-in is late
-    if (currentTime > department.expectedCheckInTime) {
-      newAttendence.isLateCheckIn = true;
-    } else {
-      newAttendence.isLateCheckIn = false;
-    }
-
-    await newAttendence.save();
-    user.isActive = true;
-    user.allAttendence.push(newAttendence._id);
-    await user.save();
-
-    const registrationToken = user.deviceInfo.deviceToken;
-
-    await sendNotification(
-      registrationToken,
-      "Check-in",
-      "You have successfully checked in."
-    );
-
-    return res.status(200).json({
-      success: true,
-      message: "Checked in successfully.",
-      attendence: newAttendence,
-    });
-  } catch (err) {
-    return res.status(500).json({
-      success: false,
-      message: "Error occurred while checking in",
-      error: err.message,
-    });
-  }
-};
-
-exports.checkOut = async (req, res) => {
-  try {
-    const { id } = req.user;
-
-    // Find the user
-    const user = await Employee.findById(id);
-    if (!user) {
-      return res.status(403).json({
-        success: false,
-        message: "User not found with this id.",
-      });
-    }
-
-    // Get today's date in YYYY-MM-DD format
-    const today = new Date().toISOString().split("T")[0];
-
-    // Find all attendance records for today
-    const attendances = await AttendenceSchema.find({
-      employee: id,
-      date: {
-        $gte: new Date(today),
-        $lt: new Date(new Date(today).setDate(new Date(today).getDate() + 1)),
-      },
-    });
-
-    // If no attendance record found for today
-    if (attendances.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "No attendance record found for today.",
-      });
-    }
-
-    // Get the last attendance record for today
-    const lastAttendance = attendances[attendances.length - 1];
-
-    // Get current time
-    const currentTime = new Date();
-
-    // Ensure checkInTime is a Date object
-    const checkInTime = new Date(lastAttendance.checkInTime);
-
-    if (isNaN(checkInTime.getTime())) {
-      throw new Error("Invalid check-in time format.");
-    }
-
-    // Update checkout time
-    lastAttendance.checkOutTime = currentTime;
-
-    // Calculate total working hours
-    const workingHours = (currentTime - checkInTime) / (1000 * 60 * 60); // in hours
-
-    if (isNaN(workingHours)) {
-      throw new Error("Invalid working hours calculation.");
-    }
-
-    lastAttendance.totalWorkingHours = workingHours;
-
-    // Check if the user left early
-    const department = await Department.findById(user.departmentId);
-    if (!department) {
-      return res.status(404).json({
-        success: false,
-        message: "Department not found with this id.",
-      });
-    }
-
-    if (currentTime < department.expectedCheckOutTime) {
-      lastAttendance.isEarlyCheckout = true;
-    } else {
-      lastAttendance.isEarlyCheckout = false;
-    }
-
-    user.isActive = false;
-    await user.save();
-
-    const registrationToken = user.deviceInfo.deviceToken;
-
-    await sendNotification(
-      registrationToken,
-      "check-out",
-      "You have successfully checked out."
-    );
-
-    // Save the updated attendance record
-    await lastAttendance.save();
-
-    return res.status(200).json({
-      success: true,
-      message: "Checked out successfully.",
-      attendence: lastAttendance,
-    });
-  } catch (err) {
-    return res.status(500).json({
-      success: false,
-      message: "Error occurred while checking out",
-      error: err.message,
-    });
-  }
-};
+  };
 
 exports.applyHalfDayLeave = async (req, res) => {
   try {
