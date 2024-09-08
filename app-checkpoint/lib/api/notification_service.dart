@@ -84,12 +84,12 @@ class NotificationService {
 
     await AwesomeNotifications().createNotification(
         content: NotificationContent(
-          id: -1,
+          id: 0,
           channelKey: "notification_channel",
           title: title,
           body: body,
           notificationLayout: NotificationLayout.Default,
-          category: NotificationCategory.Message,
+          category: NotificationCategory.Promo,
           wakeUpScreen: true,
           fullScreenIntent: true,
           autoDismissible: false,
@@ -172,17 +172,21 @@ class NotificationService {
   String? body = notification?.body; // Extract body
     Map<String, String> payloadMap = Map<String, String>.from(data);
 
+    print("########################");
+    print(title);
+    print("########################");
+
     log("payloadMap: $payloadMap");
 
     // if (data["type"] == "call") {
       await AwesomeNotifications().createNotification(
         content: NotificationContent(
-          id: -1,
+          id: 0,
           channelKey: "notification_channel",
           title: title,
           body: body,
           notificationLayout: NotificationLayout.Default,
-          category: NotificationCategory.Message,
+          category: NotificationCategory.Promo,
           wakeUpScreen: true,
           fullScreenIntent: true,
           autoDismissible: false,

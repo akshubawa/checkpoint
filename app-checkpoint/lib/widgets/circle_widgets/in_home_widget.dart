@@ -15,45 +15,51 @@ class InHomeWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: screenWidth * .57,
-      height: screenWidth * .57,
+      width: screenWidth,
+      height: screenWidth,
       decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xff3F81DE),
-            Color(0xFF9282DF),
-          ],
-          stops: [0.38, .75],
-          begin: Alignment.topRight,
-          end: Alignment.bottomLeft,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF9282DF).withOpacity(.75),
-            blurRadius: 8,
-            offset: const Offset(-3, 7),
+          color: const Color(0xff3F81DE).withOpacity(.15),
+          shape: BoxShape.circle),
+      child: Container(
+        margin: EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: const LinearGradient(
+            colors: [
+              Color(0xff3F81DE),
+              Color(0xFF9282DF),
+            ],
+            stops: [0.38, .75],
+            begin: Alignment.topRight,
+            end: Alignment.bottomLeft,
           ),
-        ],
-      ),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              UIconsPro.regularRounded.tap,
-              color: Colors.white,
-              size: screenWidth * .25,
-            ),
-            Text(
-              "CHECK IN",
-              style: GoogleFonts.nunitoSans(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF9282DF).withOpacity(.75),
+              blurRadius: 8,
+              offset: const Offset(-3, 7),
             ),
           ],
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                UIconsPro.regularRounded.tap,
+                color: Colors.white,
+                size: screenWidth * .25,
+              ),
+              Text(
+                "CHECK IN",
+                style: GoogleFonts.nunitoSans(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
