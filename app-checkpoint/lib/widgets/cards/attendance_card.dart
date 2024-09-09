@@ -1,28 +1,34 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // For date formatting
+import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import 'package:uicons_pro/uicons_pro.dart'; // For date formatting
 
 class AttendanceCard extends StatelessWidget {
   const AttendanceCard({
     super.key,
     required this.record,
+    required this.screenWidth,
   });
 
   final Map<String, dynamic> record;
+  final double screenWidth;
 
   @override
   Widget build(BuildContext context) {
     // Parse the date and format it
     DateTime date = DateTime.parse(record["date"]);
     String formattedDate = DateFormat('dd').format(date);
-   String day = DateFormat('EEE').format(date).toUpperCase();
- // Get the day of the week
+    String day = DateFormat('EEE').format(date).toUpperCase();
+    // Get the day of the week
 
     // Format the check-in and check-out times
-    String clockIn = DateFormat('hh:mm a').format(DateTime.parse(record["checkInTime"]));
+    String clockIn =
+        DateFormat('hh:mm a').format(DateTime.parse(record["checkInTime"]));
     String clockOut = record["checkOutTime"] != null
-    ? DateFormat('hh:mm a').format(DateTime.parse(record["checkOutTime"]))
-    : "N/A";
-
+        ? DateFormat('hh:mm a').format(DateTime.parse(record["checkOutTime"]))
+        : "N/A";
 
     // Calculate the total working hours
     double totalWorkingHours = record["totalWorkingHours"] ?? 0.0;
@@ -32,9 +38,9 @@ class AttendanceCard extends StatelessWidget {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          padding: EdgeInsets.symmetric(
+              horizontal: screenWidth * .03, vertical: screenWidth * .01),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
                 width: 50,
@@ -42,41 +48,63 @@ class AttendanceCard extends StatelessWidget {
                 padding: const EdgeInsets.all(8.0),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8.0),
-                  border: Border.all(color: Colors.grey.shade300),
+                  border: Border.all(color: Colors.grey.shade500),
                 ),
                 child: Column(
                   children: [
-                    Text(
-                      formattedDate,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    Expanded(
+                      child: Text(
+                        formattedDate,
+                        style: GoogleFonts.outfit(
+                            color: Color.fromRGBO(51, 60, 72, 1),
+                            fontSize: 17.5,
+                            fontWeight: FontWeight.bold),
+                      ),
                     ),
                     Text(
                       day,
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      style: GoogleFonts.redHatDisplay(
+                          fontSize: 12, color: Colors.grey),
                     ),
                   ],
                 ),
               ),
-              Row(
-                children: [
-                  const Icon(Icons.arrow_outward_rounded, color: Colors.blue, size: 18),
-                  const SizedBox(width: 4),
-                  Text(clockIn, style: const TextStyle(color: Colors.green)),
-                ],
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: screenWidth * .025),
+                child: Row(
+                  children: [
+                    Transform.rotate(
+                      angle: -45 * pi / 180,
+                      child: Icon(UIconsPro.regularRounded.arrow_small_right,
+                          color: Colors.blue, size: 18),
+                    ),
+                    Text(clockIn,
+                        style: GoogleFonts.outfit(color: Colors.green)),
+                  ],
+                ),
               ),
-              Row(
-                children: [
-                  Icon(Icons.arrow_downward, color: Colors.yellow.shade700, size: 18),
-                  const SizedBox(width: 4),
-                  Text(clockOut, style: const TextStyle(color: Colors.red)),
-                ],
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: screenWidth * .035),
+                child: Row(
+                  children: [
+                    Icon(UIconsPro.regularRounded.arrow_small_down,
+                        color: Colors.yellow.shade700, size: 18),
+                    Text(clockOut,
+                        style: GoogleFonts.outfit(color: Colors.red)),
+                  ],
+                ),
               ),
-              Text(hours, style: const TextStyle(color: Colors.blue)),
+              Padding(
+                padding: EdgeInsets.only(left: screenWidth * .1),
+                child:
+                    Text(hours, style: GoogleFonts.outfit(color: Colors.blue)),
+              ),
             ],
           ),
         ),
         Padding(
-          padding: const EdgeInsets.only(left: 72.0), // Adjust this value to control the left padding
+          padding: const EdgeInsets.only(
+              left: 72.0), // Adjust this value to control the left padding
           child: Divider(
             color: Colors.grey.shade300, // Light grey color for the divider
             thickness: 1, // Thickness of the divider
