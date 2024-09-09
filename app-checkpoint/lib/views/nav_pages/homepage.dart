@@ -44,8 +44,8 @@ class _HomePageState extends State<HomePage>
   File? selectedImage;
   double latitude = 0; // Current location latitude
   double longitude = 0; // Current location longitude
-  double targetLatitude = 28.4548039;
-  double targetLongitude = 77.5131496;
+  double targetLatitude = 28.450461;
+  double targetLongitude = 77.584760;
   double distanceInMeters = 0.0;
   bool isInRange = false;
   String? cityName;
