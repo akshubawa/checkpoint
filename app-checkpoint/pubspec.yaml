@@ -64,6 +64,7 @@ dependencies:
   image_picker: ^1.1.2
   flutter_launcher_icons: ^0.13.1
   svg_flutter: ^0.0.1
+  timezone: ^0.9.4
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -71,6 +72,7 @@ dev_dependencies:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
+  remove_alpha_ios: true
   image_path: "assets/images/logo.png"
   min_sdk_android: 21 # android min sdk min:16, default 21
 

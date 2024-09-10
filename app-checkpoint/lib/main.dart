@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-void main() async{
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   await NotificationService.initializeNotification();
@@ -13,7 +13,8 @@ void main() async{
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
-    ]);
-  runApp(MyApp(token: prefs.getString('token')?? "",));
+  ]);
+  runApp(MyApp(
+    token: prefs.getString('token') ?? "",
+  ));
 }
-

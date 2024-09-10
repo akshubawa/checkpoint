@@ -17,7 +17,6 @@ import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -31,21 +30,25 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage>
-    with SingleTickerProviderStateMixin {
+class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   final String company = "GAIL Limited, Greater Noida Office";
   final String date = "";
   bool _playRippleAnimation = false; // Move this outside the build method
   late AnimationController _flipController;
   late Animation<double> _flipAnimation;
-
+  late AnimationController _controller;
+  late Animation<double> _animation;
   Timer? _timer;
   bool isActive = false;
   File? selectedImage;
   double latitude = 0; // Current location latitude
   double longitude = 0; // Current location longitude
-  double targetLatitude = 28.450461;
-  double targetLongitude = 77.584760;
+  // double targetLatitude = 28.4548039;
+  // double targetLongitude = 77.5131496;
+
+  double targetLatitude = 28.450371597622993;
+  double targetLongitude = 77.58493137009076;
+
   double distanceInMeters = 0.0;
   bool isInRange = false;
   String? cityName;
@@ -62,10 +65,52 @@ class _HomePageState extends State<HomePage>
   late Map jwtDecodedToken = {};
   late String employee_id = "";
   late bool isVerified = true;
+  bool _isCheckingInOut = false;
 
   DateTime? checkInStartTime;
+  StreamSubscription<Position>? _positionStreamSubscription;
 
-  void getLocation() async {
+  bool isTimerPaused = false;
+  DateTime? pauseStartTime;
+  bool wasInRangeBeforePause = false;
+
+  void _toggleTimer() {
+    setState(() {
+      if (isTimerPaused) {
+        // Resuming the timer
+        if (pauseStartTime != null) {
+          Duration pauseDuration = DateTime.now().difference(pauseStartTime!);
+          checkInStartTime = checkInStartTime?.add(pauseDuration);
+        }
+        isTimerPaused = false;
+        pauseStartTime = null;
+        _startTimer();
+      } else {
+        // Pausing the timer
+        isTimerPaused = true;
+        pauseStartTime = DateTime.now();
+        wasInRangeBeforePause = isInRange;
+        _workingTimer.cancel();
+      }
+    });
+  }
+
+  void _onRefresh() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    // await getLocation();
+
+    await getLocationDetails(latitude, longitude);
+    await getCheckInCheckOutData();
+
+    setState(() {
+      isLoading = false;
+    });
+  }
+
+  Future<void> getLocation() async {
     await Geolocator.checkPermission();
     await Geolocator.requestPermission();
 
@@ -85,18 +130,22 @@ class _HomePageState extends State<HomePage>
     distanceInMeters = Geolocator.distanceBetween(
         latitude, longitude, targetLatitude, targetLongitude);
 
-    // Check if the distance is within 200 meters
-    isInRange = distanceInMeters <= 200;
-    getLocationDetails(latitude, longitude);
-    setState(() {
-      // Update the UI with the distance and range status
-    });
+    bool newIsInRange = distanceInMeters <= 200;
+    if (newIsInRange != isInRange) {
+      setState(() {
+        isInRange = newIsInRange;
+      });
+      _handleLocationChange();
+    }
 
+    getLocationDetails(latitude, longitude);
+    // Update the UI with the distance and range status
     debugPrint('Distance: $distanceInMeters meters');
     debugPrint(isInRange ? 'In range' : 'Not in range');
   }
 
-  void getLocationDetails(double givenLatitude, double givenLongitude) async {
+  Future<void> getLocationDetails(
+      double givenLatitude, double givenLongitude) async {
     try {
       List<Placemark> placemarks = await placemarkFromCoordinates(
         givenLatitude,
@@ -156,7 +205,7 @@ class _HomePageState extends State<HomePage>
 
   void _startTimer() {
     _workingTimer = Timer.periodic(const Duration(seconds: 1), (timer) async {
-      if (checkInStartTime != null) {
+      if (checkInStartTime != null && !isTimerPaused) {
         Duration difference = DateTime.now().difference(checkInStartTime!);
         if (mounted) {
           setState(() {
@@ -169,47 +218,44 @@ class _HomePageState extends State<HomePage>
   }
 
   Future<void> checkInOut(BuildContext context, String command) async {
+    if (_isCheckingInOut) return;
+    _isCheckingInOut = true;
+
     try {
       final Map<String, String> headers = {
         'Authorization': 'Bearer $token',
       };
-      print(token);
       final response =
           await apiService.post(command, headers: headers, body: "");
-      print(response.statusCode);
       if (response.statusCode == 200) {
-        print('object');
         var jsonResponse = jsonDecode(response.body);
-        print(jsonResponse);
-
         final SharedPreferences prefs = await SharedPreferences.getInstance();
         if (command == 'checkin') {
           checkInStartTime = DateTime.now();
           await prefs.setString(
               'checkInStartTime', checkInStartTime!.toIso8601String());
-          await prefs.setBool('inOffice', true);
           await prefs.setBool('isActive', true);
           setState(() {
-            // inOffice = true;
             isActive = true;
+            isTimerPaused = false;
+            pauseStartTime = null;
           });
           _startTimer();
           _flipController.forward();
         } else {
           await prefs.remove('checkInStartTime');
-          await prefs.setBool('inOffice', false);
           await prefs.setBool('isActive', false);
           setState(() {
-            // inOffice = false;
             isActive = false;
             _counter = 0;
             formattedCounter = "00:00:00";
             checkInStartTime = null;
+            isTimerPaused = false;
+            pauseStartTime = null;
           });
           _workingTimer.cancel();
           _flipController.reverse();
         }
-        print(command);
         CustomSnackbar.show(
             context,
             (command == 'checkin')
@@ -224,6 +270,8 @@ class _HomePageState extends State<HomePage>
       CustomSnackbar.show(
           context, "Something went wrong. Please try again later.", "red");
       debugPrint(e.toString());
+    } finally {
+      _isCheckingInOut = false;
     }
   }
 
@@ -255,11 +303,17 @@ class _HomePageState extends State<HomePage>
           checkInTime = jsonResponse.containsKey('checkInTime') &&
                   jsonResponse['checkInTime'] != null
               ? DateTime.parse(jsonResponse['checkInTime'])
+                  .toUtc()
+                  .add(Duration(hours: 5, minutes: 30))
               : null;
+
           checkOutTime = jsonResponse.containsKey('checkOutTime') &&
                   jsonResponse['checkOutTime'] != null
               ? DateTime.parse(jsonResponse['checkOutTime'])
+                  .toUtc()
+                  .add(Duration(hours: 5, minutes: 30))
               : null;
+
           if (jsonResponse.containsKey('totalWorkingHours') &&
               jsonResponse['totalWorkingHours'] != null) {
             double hours =
@@ -398,24 +452,30 @@ class _HomePageState extends State<HomePage>
     }
   }
 
-  Future<void> _pickImageFromCamera() async {
-    final returnedImage = await ImagePicker().pickImage(
-      source: ImageSource.camera,
-      preferredCameraDevice: CameraDevice.front, // Specify front camera
-    );
+  // Future<void> _pickImageFromCamera() async {
+  //   final returnedImage = await ImagePicker().pickImage(
+  //     source: ImageSource.camera,
+  //     preferredCameraDevice: CameraDevice.front, // Specify front camera
+  //   );
 
-    if (returnedImage != null) {
-      setState(() {
-        selectedImage = File(returnedImage.path);
-      });
-    }
-  }
+  //   if (returnedImage != null) {
+  //     setState(() {
+  //       selectedImage = File(returnedImage.path);
+  //     });
+  //   }
+  // }
 
   String formatCheckInTime(DateTime? dateTime) {
     if (dateTime == null) {
       return '--:--';
     }
     return DateFormat('HH:mm').format(dateTime);
+  }
+
+  void _triggerWobble() {
+    _controller.forward().then((_) {
+      _controller.reverse();
+    });
   }
 
   @override
@@ -427,16 +487,68 @@ class _HomePageState extends State<HomePage>
     );
 
     _flipAnimation = Tween<double>(begin: 0, end: 1).animate(_flipController);
-    getLocation();
+
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+    _animation = Tween<double>(begin: -10.0, end: 10.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.elasticIn),
+    );
+    _startLocationMonitoring();
+    // getLocation();
     getTokenFromPrefs();
     loadCheckInStatus();
   }
 
   @override
   void dispose() {
+    _positionStreamSubscription?.cancel();
     _flipController.dispose();
-    _timer?.cancel(); // Cancel the timer to avoid memory leaks
+    _controller.dispose();
+    _workingTimer.cancel();
+    _timer!.cancel();
     super.dispose();
+  }
+
+  void _startLocationMonitoring() async {
+    await Geolocator.checkPermission();
+    await Geolocator.requestPermission();
+
+    const LocationSettings locationSettings = LocationSettings(
+      accuracy: LocationAccuracy.high,
+      distanceFilter: 10,
+    );
+
+    _positionStreamSubscription =
+        Geolocator.getPositionStream(locationSettings: locationSettings)
+            .listen((Position position) {
+      setState(() {
+        latitude = position.latitude;
+        longitude = position.longitude;
+      });
+      calculateDistance();
+      _handleLocationChange();
+    });
+  }
+
+  DateTime? _lastLocationChangeTime;
+  final _locationChangeCooldown = Duration(minutes: 5);
+
+  void _handleLocationChange() {
+    final now = DateTime.now();
+    if (_lastLocationChangeTime == null ||
+        now.difference(_lastLocationChangeTime!) > _locationChangeCooldown) {
+      if (isInRange && !isActive && !isTimerPaused) {
+        checkInOut(context, "checkin");
+      } else if (!isInRange && isActive && !isTimerPaused) {
+        checkInOut(context, "checkout");
+      } else if (isInRange && isTimerPaused && wasInRangeBeforePause) {
+        // Auto-resume when coming back in range
+        _toggleTimer();
+      }
+      _lastLocationChangeTime = now;
+    }
   }
 
   void _onTap() async {
@@ -445,20 +557,25 @@ class _HomePageState extends State<HomePage>
         setState(() {
           _playRippleAnimation = true;
         });
-        if (!isActive) {
-          // await _pickImageFromCamera();
-          // if (selectedImage != null) {
-          if (isVerified) {
-            checkInOut(context, "checkin");
-            // }
-          } else {
-            setState(() {
-              _playRippleAnimation = false;
-            });
-          }
-        } else {
-          checkInOut(context, "checkout");
-        }
+
+        Timer(const Duration(seconds: 2), () {
+          setState(() {
+            _playRippleAnimation = false;
+          });
+        });
+
+        // Handle check-in and check-out logic
+        // if (!isActive) {
+        //   if (isVerified) {
+        //     checkInOut(context, "checkin");
+        //   } else {
+        //     setState(() {
+        //       _playRippleAnimation = false;
+        //     });
+        //   }
+        // } else {
+        //   checkInOut(context, "checkout");
+        // }
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -529,14 +646,7 @@ class _HomePageState extends State<HomePage>
                                 Row(
                                   children: [
                                     IconButton(
-                                      onPressed: () {
-                                        getCheckInCheckOutData();
-                                        getLocation();
-                                        getLocationDetails(latitude, longitude);
-
-                                        setState(() {});
-                                        //
-                                      },
+                                      onPressed: _onRefresh,
                                       icon: Icon(
                                         UIconsPro.boldRounded.refresh,
                                         size: 20,
@@ -595,47 +705,86 @@ class _HomePageState extends State<HomePage>
                                         flex: 8,
                                         child: Center(
                                           child: GestureDetector(
-                                            onTap: _onTap,
+                                            onTap: isInRange
+                                                ? _onTap
+                                                : _triggerWobble,
                                             child: AnimatedBuilder(
-                                              animation: _flipAnimation,
+                                              animation: Listenable.merge(
+                                                  [_flipAnimation, _animation]),
                                               builder: (context, child) {
                                                 final angle =
                                                     _flipAnimation.value *
                                                         3.1416;
                                                 final isFrontVisible =
                                                     angle < 1.5708;
-                                                return Transform(
-                                                  transform:
-                                                      Matrix4.rotationY(angle),
-                                                  alignment: Alignment.center,
-                                                  child: _playRippleAnimation
-                                                      ? RippleAnimation(
-                                                          repeat: false,
-                                                          minRadius: 75,
-                                                          ripplesCount: 4,
-                                                          duration:
-                                                              const Duration(
-                                                                  seconds: 2),
-                                                          child: isFrontVisible
-                                                              ? InHomeWidget(
-                                                                  screenWidth:
-                                                                      screenWidth)
-                                                              : InOfficeWidget(
-                                                                  formattedCounter:
-                                                                      formattedCounter,
-                                                                  screenWidth:
-                                                                      screenWidth),
-                                                        )
-                                                      : isFrontVisible
-                                                          ? InHomeWidget(
-                                                              screenWidth:
-                                                                  screenWidth)
-                                                          : InOfficeWidget(
-                                                              formattedCounter:
-                                                                  formattedCounter,
-                                                              screenWidth:
-                                                                  screenWidth),
-                                                );
+                                                return isInRange
+                                                    ? Transform(
+                                                        transform:
+                                                            Matrix4.rotationY(
+                                                                angle),
+                                                        alignment:
+                                                            Alignment.center,
+                                                        child: _playRippleAnimation
+                                                            ? RippleAnimation(
+                                                                color: Colors.black45,
+                                                                repeat: false,
+                                                                minRadius: 75,
+                                                                ripplesCount: 4,
+                                                                duration: const Duration(seconds: 2),
+                                                                child: isFrontVisible
+                                                                    ? InHomeWidget(screenWidth: screenWidth, inRange: isInRange)
+                                                                    : InOfficeWidget(
+                                                                        formattedCounter:
+                                                                            formattedCounter,
+                                                                        screenWidth:
+                                                                            screenWidth,
+                                                                        onPlayPauseTap:
+                                                                            _toggleTimer,
+                                                                        isPaused:
+                                                                            isTimerPaused,
+                                                                        inRange:
+                                                                            isInRange,
+                                                                      ))
+                                                            : isFrontVisible
+                                                                ? InHomeWidget(
+                                                                    screenWidth:
+                                                                        screenWidth,
+                                                                    inRange:
+                                                                        isInRange,
+                                                                  )
+                                                                : InOfficeWidget(
+                                                                    formattedCounter:
+                                                                        formattedCounter,
+                                                                    screenWidth:
+                                                                        screenWidth,
+                                                                    onPlayPauseTap:
+                                                                        _toggleTimer,
+                                                                    isPaused:
+                                                                        isTimerPaused,
+                                                                    inRange:
+                                                                        isInRange,
+                                                                  ))
+                                                    : Transform.translate(
+                                                        offset: Offset(_animation.value, 0),
+                                                        child: isFrontVisible
+                                                            ? InHomeWidget(
+                                                                screenWidth:
+                                                                    screenWidth,
+                                                                inRange:
+                                                                    isInRange,
+                                                              )
+                                                            : InOfficeWidget(
+                                                                formattedCounter:
+                                                                    formattedCounter,
+                                                                screenWidth:
+                                                                    screenWidth,
+                                                                onPlayPauseTap:
+                                                                    _toggleTimer,
+                                                                isPaused:
+                                                                    isTimerPaused,
+                                                                inRange:
+                                                                    isInRange,
+                                                              ));
                                               },
                                             ),
                                           ),

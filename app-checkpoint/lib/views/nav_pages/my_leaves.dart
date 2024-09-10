@@ -50,53 +50,79 @@ class _MyLeavesState extends State<MyLeaves> {
               painter: BackgroundPainter3(),
             ),
           ),
+          // Positioned(
+          //   top: screenHeight * 0.1,
+          //   bottom: screenHeight * 0.1,
+          //   left: screenWidth * .03,
+          //   right: screenWidth * .03,
+          //   child: Opacity(
+          //       opacity: .3, child: SvgPicture.asset("assets/svg/report.svg")),
+          // ),
           SafeArea(
             child: Column(
               children: [
-                Text(
-                  'My Leaves',
-                  style: GoogleFonts.outfit(
-                      fontSize: 23, fontWeight: FontWeight.w600),
+                Padding(
+                  padding: const EdgeInsets.only(top: 15.0),
+                  child: Text(
+                    'My Leaves',
+                    style: GoogleFonts.outfit(
+                        color: Color.fromRGBO(51, 60, 72, 1),
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold),
+                  ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 5),
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Center(
                     child: Column(
                       children: [
                         SizedBox(
-                          width: 200,
-                          height: 200,
-                          child: FittedBox(
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                CircularProgressIndicator(
+                          width: screenWidth * .57,
+                          height: screenWidth * .57,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              SizedBox(
+                                width: screenWidth * .57,
+                                height: screenWidth * .57,
+                                child: CircularProgressIndicator(
                                   value: 5 / 20,
-                                  strokeWidth: 3,
+                                  strokeWidth: 6,
                                   valueColor:
                                       const AlwaysStoppedAnimation<Color>(
                                     Colors.blueAccent,
                                   ),
                                   backgroundColor: Colors.grey.shade200,
                                 ),
-                                Text(
-                                  '05',
-                                  style: GoogleFonts.outfit(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600),
-                                ),
-                              ],
-                            ),
+                              ),
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    '05',
+                                    style: GoogleFonts.outfit(
+                                      height: .9,
+                                      color: Color.fromRGBO(51, 60, 72, 1),
+                                      fontSize: screenWidth * 0.14,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Leave Balance',
+                                    style: GoogleFonts.outfit(
+                                      height: 2,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.grey[600],
+                                      fontSize: screenWidth * 0.05,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 20),
-                        Text(
-                          'Leave Balance',
-                          style: GoogleFonts.outfit(
-                              fontSize: 18, fontWeight: FontWeight.w600),
-                        ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 10),
                         GestureDetector(
                           onTap: () {
                             Navigator.push(
@@ -119,43 +145,73 @@ class _MyLeavesState extends State<MyLeaves> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Column(
-                      children: [
-                        Text(
-                          'Total Leaves',
-                          style: GoogleFonts.nunitoSans(
-                              fontSize: 15, fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          '20',
-                          style: GoogleFonts.outfit(
-                              color: Colors.red,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600),
-                        ),
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        Text(
-                          'Leaves Used',
-                          style: GoogleFonts.nunitoSans(
-                              fontSize: 15, fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          '15',
-                          style: GoogleFonts.outfit(
-                              color: Colors.red,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600),
-                        ),
-                      ],
-                    ),
-                  ],
+                SizedBox(height: screenHeight * .02),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 3.7,
+                                backgroundColor: Colors.grey[350],
+                              ),
+                              const SizedBox(width: 13),
+                              Text(
+                                'Total Leaves',
+                                style: GoogleFonts.outfit(
+                                    color: Colors.grey[600],
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500),
+                              ),
+                            ],
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 23.0),
+                            child: Text(
+                              '20',
+                              style: GoogleFonts.outfit(
+                                  height: 1,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 3.7,
+                                backgroundColor: Colors.blue,
+                              ),
+                              const SizedBox(width: 13),
+                              Text(
+                                'Leaves Used',
+                                style: GoogleFonts.outfit(
+                                    color: Colors.grey[600],
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500),
+                              ),
+                            ],
+                          ),
+                          Text(
+                            '15',
+                            style: GoogleFonts.outfit(
+                                height: 1,
+                                fontSize: 22,
+                                fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Row(
@@ -253,13 +309,21 @@ class _MyLeavesState extends State<MyLeaves> {
   Widget leaveCategory(String title, int count, Color color) {
     return Column(
       children: [
-        CircleAvatar(
-          backgroundColor: color.withOpacity(0.2),
-          child: Text(
-            count.toString(),
-            style:
-                GoogleFonts.outfit(color: color, fontWeight: FontWeight.w600),
-          ),
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            CircularProgressIndicator(
+              color: color,
+              value: count.toDouble() / 10,
+              strokeWidth: 2.5,
+              backgroundColor: Colors.grey[300],
+            ),
+            Text(
+              count.toString(),
+              style:
+                  GoogleFonts.outfit(color: color, fontWeight: FontWeight.w600),
+            ),
+          ],
         ),
         const SizedBox(height: 4),
         Text(title,

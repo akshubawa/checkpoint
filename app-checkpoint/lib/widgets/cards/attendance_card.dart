@@ -3,7 +3,9 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:uicons_pro/uicons_pro.dart'; // For date formatting
+import 'package:uicons_pro/uicons_pro.dart';
+import 'package:timezone/timezone.dart' as tz;
+import 'package:timezone/data/latest.dart' as tz;
 
 class AttendanceCard extends StatelessWidget {
   const AttendanceCard({
@@ -15,24 +17,32 @@ class AttendanceCard extends StatelessWidget {
   final Map<String, dynamic> record;
   final double screenWidth;
 
+  String formatToIST(String? timeString) {
+    if (timeString == null || timeString.isEmpty) {
+      return 'N/A';
+    }
+    DateTime utcTime = DateTime.parse(timeString);
+    tz.Location india = tz.getLocation('Asia/Kolkata');
+    tz.TZDateTime istTime = tz.TZDateTime.from(utcTime, india);
+    return DateFormat('hh:mm a').format(istTime);
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Ensure timezone data is initialized
+    tz.initializeTimeZones();
+
     // Parse the date and format it
     DateTime date = DateTime.parse(record["date"]);
     String formattedDate = DateFormat('dd').format(date);
     String day = DateFormat('EEE').format(date).toUpperCase();
-    // Get the day of the week
 
-    // Format the check-in and check-out times
-    String clockIn =
-        DateFormat('hh:mm a').format(DateTime.parse(record["checkInTime"]));
-    String clockOut = record["checkOutTime"] != null
-        ? DateFormat('hh:mm a').format(DateTime.parse(record["checkOutTime"]))
-        : "N/A";
+    // Format the check-in and check-out times to IST
+    String clockIn = formatToIST(record["checkInTime"]);
+    String clockOut = formatToIST(record["checkOutTime"]);
 
     // Calculate the total working hours
     double totalWorkingHours = record["totalWorkingHours"] ?? 0.0;
-
     String hours = "${totalWorkingHours.toStringAsFixed(2)} hrs";
 
     return Column(
@@ -94,8 +104,9 @@ class AttendanceCard extends StatelessWidget {
                   ],
                 ),
               ),
+              const Spacer(),
               Padding(
-                padding: EdgeInsets.only(left: screenWidth * .1),
+                padding: EdgeInsets.only(right: screenWidth * .1),
                 child:
                     Text(hours, style: GoogleFonts.outfit(color: Colors.blue)),
               ),
@@ -103,12 +114,11 @@ class AttendanceCard extends StatelessWidget {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.only(
-              left: 72.0), // Adjust this value to control the left padding
+          padding: const EdgeInsets.only(left: 72.0),
           child: Divider(
-            color: Colors.grey.shade300, // Light grey color for the divider
-            thickness: 1, // Thickness of the divider
-            height: 0, // Height to minimize extra space
+            color: Colors.grey.shade300,
+            thickness: 1,
+            height: 0,
           ),
         ),
       ],
