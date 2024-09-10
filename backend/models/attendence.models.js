@@ -5,54 +5,61 @@ const attendenceSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  userData: {
+  employee: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "user",
+    ref: "employee",
     required: true,
   },
   checkInTime: {
-    type: String,
-    required: true,
+    type: Date,
+    // required: true,
   },
   checkOutTime: {
-    type: String,
-    required: true,
+    type: Date,
+    // required: true,
   },
-  isLate: {
+  isLateCheckIn: {
     type: Boolean,
     default: false,
   },
-  isWentEarly: {
+  isEarlyCheckout: {
     type: Boolean,
     default: false,
   },
-  department: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "department",
-    required: true,
+  officeExitRecords: [
+    {
+      flag: Boolean,
+      exitTime: Date,
+      returnTime: Date,
+      reason: "string",
+      isApprovedByAdmin: Boolean,
+    },
+  ],
+  totalWorkingHours: {
+    type: Number,
   },
 });
 
-attendenceSchema.pre("save", async function (next) {
-  const attendence = this;
+// attendenceSchema.pre("save", async function (next) {
+//   const attendence = this;
 
-  const department = await mongoose
-    .model("department")
-    .findById(attendence.department);
+//   const department = await mongoose
+//     .model("department")
+//     .findById(attendence.department);
 
-  if (department) {
-    if (attendence.checkInTime > department.expectedCheckIntime) {
-      attendence.isLate = true;
-    } else {
-      attendence.isLate = false;
-    }
-  }
+//   if (department) {
+//     if (attendence.checkInTime > department.expectedCheckIntime) {
+//       attendence.isLateCheckIn = true;
+//     } else {
+//       attendence.isLateCheckIn = false;
+//     }
+//   }
 
-  if (attendence.checkOutTime < department.expectedCheckOutTime) {
-    attendence.isWentEarly = true;
-  } else {
-    attendence.isWentEarly = false;
-  }
-});
+//   if (attendence.checkOutTime < department.expectedCheckOutTime) {
+//     attendence.isEarlyCheckout = true;
+//   } else {
+//     attendence.isEarlyCheckout = false;
+//   }
+// });
 
 module.exports = mongoose.model("attendence", attendenceSchema);

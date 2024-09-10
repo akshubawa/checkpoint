@@ -5,17 +5,18 @@ const departmentSchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
+      trim: true,
     },
     description: {
       type: String,
       required: true,
+      trim: true,
     },
-    allUser: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "user",
-      },
-    ],
+    office: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Office",
+      required: true,
+    },
     expectedCheckInTime: {
       type: String,
       required: true,
@@ -24,6 +25,18 @@ const departmentSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    workingDays: [
+      {
+        type: String,
+        required: true,
+      },
+    ],
+    allUser: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "employee",
+      },
+    ],
   },
   { timestamps: true }
 );
