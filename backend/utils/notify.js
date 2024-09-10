@@ -3,7 +3,7 @@ const {JWT} = require('google-auth-library');
 
 async function getAccessToken() {
     try{
-        const serviceAccountKey = require('../app-checkpoint-firebase-adminsdk-migey-f22a60e73f.json');
+        const serviceAccountKey = require('../app-checkpoint-firebase-adminsdk-migey-f9f14c84c5.json');
 
         const jwtClient = new JWT({
             email: serviceAccountKey.client_email,
